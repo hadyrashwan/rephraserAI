@@ -5,8 +5,7 @@
   "description": "Rephrase selected text with RephaserAI",
   "permissions": [
     "activeTab",
-    "contextMenus",
-    "https://*/"
+    "contextMenus"
   ],
   "background": {
     "service_worker": "background.js"
