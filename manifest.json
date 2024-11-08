@@ -7,7 +7,8 @@
     "activeTab",
     "contextMenus",
     "storage",
-    "windows"
+    "windows",
+    "declarativeNetRequest"
   ],
   "host_permissions": [
     "https://*/*",
@@ -31,5 +32,12 @@
     "16": "images/icon16.png",
     "48": "images/icon48.png",
     "128": "images/icon128.png"
+  },
+  "declarative_net_request": {
+    "rule_resources": [{
+      "id": "ruleset_1",
+      "enabled": true,
+      "path": "rules.json"
+    }]
   }
 }
