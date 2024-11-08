@@ -10,7 +10,8 @@
     "windows"
   ],
   "host_permissions": [
-    "https://*/*"
+    "https://*/*",
+    "http://localhost:11434/*"
   ],
   "optional_hosts": [
     "http://*/"
