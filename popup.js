@@ -7,7 +7,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const tokenInput = document.getElementById('token');
   const apiTypeSelect = document.getElementById('apiType');
   const saveButton = document.getElementById('saveButton');
-  const runOllamaButton = document.getElementById('runOllamaButton');
 
   // Load saved API key, model, base URL, token, and API type from Chrome storage
   chrome.storage.sync.get(['apiKey', 'model', 'baseUrl', 'token', 'apiType'], (data) => {
@@ -35,9 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const baseUrl = baseUrlInput.value;
     const token = tokenInput.value;
     const apiType = apiTypeSelect.value;
-    chrome.storage.sync.set({ apiKey, model, baseUrl, token, apiType }, () => {
-      alert('API Key, Model, Base URL, Token, and API Type saved successfully');
-    });
+    chrome.storage.sync.set({ apiKey, model, baseUrl, token, apiType });
   });
 
   // Load the rephrased text from Chrome storage
@@ -54,11 +51,5 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
       copyButton.textContent = 'Copy';
     }, 2000);
-  });
-
-  // Handle running Ollama locally
-  runOllamaButton.addEventListener('click', () => {
-    // Add logic to run Ollama locally
-    alert('Running Ollama locally...');
   });
 });
