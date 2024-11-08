@@ -4,12 +4,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const apiKeyInput = document.getElementById('apiKey');
   const modelInput = document.getElementById('model');
   const baseUrlInput = document.getElementById('baseUrl');
-  const tokenInput = document.getElementById('token');
   const apiTypeSelect = document.getElementById('apiType');
   const saveButton = document.getElementById('saveButton');
 
-  // Load saved API key, model, base URL, token, and API type from Chrome storage
-  chrome.storage.sync.get(['apiKey', 'model', 'baseUrl', 'token', 'apiType'], (data) => {
+  // Load saved API key/token, model, base URL, and API type from Chrome storage
+  chrome.storage.sync.get(['apiKey', 'model', 'baseUrl', 'apiType'], (data) => {
     if (data.apiKey) {
       apiKeyInput.value = data.apiKey;
     }
@@ -19,22 +18,18 @@ document.addEventListener('DOMContentLoaded', () => {
     if (data.baseUrl) {
       baseUrlInput.value = data.baseUrl;
     }
-    if (data.token) {
-      tokenInput.value = data.token;
-    }
     if (data.apiType) {
       apiTypeSelect.value = data.apiType;
     }
   });
 
-  // Save API key, model, base URL, token, and API type to Chrome storage
+  // Save API key/token, model, base URL, and API type to Chrome storage
   saveButton.addEventListener('click', () => {
     const apiKey = apiKeyInput.value;
     const model = modelInput.value;
     const baseUrl = baseUrlInput.value;
-    const token = tokenInput.value;
     const apiType = apiTypeSelect.value;
-    chrome.storage.sync.set({ apiKey, model, baseUrl, token, apiType });
+    chrome.storage.sync.set({ apiKey, model, baseUrl, apiType });
   });
 
   // Load the rephrased text from Chrome storage

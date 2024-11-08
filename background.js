@@ -10,12 +10,11 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
   if (info.menuItemId === "rephrase") {
     const selectedText = info.selectionText;
 
-    // Load API key, model, base URL, token, and API type from Chrome storage
-    chrome.storage.sync.get(['apiKey', 'model', 'baseUrl', 'token', 'apiType'], (data) => {
+    // Load API key/token, model, base URL, and API type from Chrome storage
+    chrome.storage.sync.get(['apiKey', 'model', 'baseUrl', 'apiType'], (data) => {
       const apiKey = data.apiKey || 'AIzaSyCR4Y7xry-5rz_m4IY51J2urBsAGsVw35o';
       const model = data.model || 'gemini-1.5-flash';
       const baseUrl = data.baseUrl || 'https://api.openai.com';
-      const token = data.token || '';
       const apiType = data.apiType || 'gemini';
 
       let requestBody;
@@ -39,7 +38,7 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 
       const headers = {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
+        'Authorization': `Bearer ${apiKey}`
       };
 
       // Set referrerPolicy to "no-referrer" if base URL contains localhost
