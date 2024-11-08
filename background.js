@@ -10,15 +10,18 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
   if (info.menuItemId === "rephrase") {
     const selectedText = info.selectionText;
 
-    // Load API key and model from Chrome storage
-    chrome.storage.sync.get(['apiKey', 'model'], (data) => {
+    // Load API key, model, base URL, and token from Chrome storage
+    chrome.storage.sync.get(['apiKey', 'model', 'baseUrl', 'token'], (data) => {
       const apiKey = data.apiKey || 'AIzaSyCR4Y7xry-5rz_m4IY51J2urBsAGsVw35o';
       const model = data.model || 'gemini-1.5-flash';
+      const baseUrl = data.baseUrl || 'https://api.openai.com';
+      const token = data.token || '';
 
-      fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
+      fetch(`${baseUrl}/v1beta/models/${model}:generateContent?key=${apiKey}`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
           contents: [{
