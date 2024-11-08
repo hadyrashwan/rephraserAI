@@ -51,6 +51,8 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 
       if (baseUrl.includes('localhost')) {
         options.referrerPolicy = 'no-referrer';
+        // Apply dynamic rules to modify headers
+        rebuildRules('localhost');
       }
 
       fetch(requestUrl, options)
