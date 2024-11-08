@@ -33,13 +33,7 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
         // Store the rephrased text first
         chrome.storage.local.set({ 'popupData': rephrasedText }, () => {
           // Then open the popup
-          chrome.windows.create({
-            url: 'popup.html',
-            type: 'popup',
-            width: 400,
-            height: 300,
-            focused: true
-          });
+          chrome.action.openPopup();
         });
       })
       .catch(error => console.error('Error:', error));
