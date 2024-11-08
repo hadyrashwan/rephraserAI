@@ -22,7 +22,7 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
         },
         body: JSON.stringify({
           contents: [{
-            parts: [{ text: selectedText }]
+            parts: [{ text: `Please fix the grammar, spelling, and rephrase the following text: ${selectedText}` }]
           }]
         })
       })
