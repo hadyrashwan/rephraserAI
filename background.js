@@ -37,9 +37,13 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
       }
 
       const headers = {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
+        'Content-Type': 'application/json'
       };
+
+      // Add Authorization header only for OpenAI
+      if (apiType === 'openai') {
+        headers['Authorization'] = `Bearer ${apiKey}`;
+      }
 
       // Set referrerPolicy to "no-referrer" if base URL contains localhost
       const options = {
