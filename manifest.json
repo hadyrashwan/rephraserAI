@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "RephaserAI Tool",
+  "name": "RephaserAI",
   "version": "1.0",
   "description": "Rephrase selected text with RephaserAI",
   "permissions": [
