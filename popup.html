@@ -7,6 +7,10 @@
 <body>
   <div id="popup">
     <h1>RephaserAI</h1>
+    <h2>Rephrased Text</h2>
+    <textarea id="rephrasedText" readonly></textarea>
+    <button id="copyButton">Copy</button>
+    <h2>Advanced Settings</h2>
     <form id="settingsForm">
       <label for="apiKey">API Key:</label>
       <input type="password" id="apiKey" placeholder="Enter your API key">
@@ -21,9 +25,6 @@
       </select>
       <button type="submit" id="saveButton">Save</button>
     </form>
-    <h2>Rephrased Text</h2>
-    <textarea id="rephrasedText" readonly></textarea>
-    <button id="copyButton">Copy</button>
   </div>
   <script src="popup.js"></script>
 </body>
