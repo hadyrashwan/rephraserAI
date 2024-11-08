@@ -26,6 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === 'showPopup') {
+      console.log('inside the show popup', request.text)
       rephrasedTextElement.value = request.text;
     }
   });

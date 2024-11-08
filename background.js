@@ -29,7 +29,6 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
       .then(response => response.json())
       .then(data => {
         const rephrasedText = data.candidates[0].content.parts[0].text;
-        console.log(rephrasedText)
         chrome.runtime.sendMessage({ action: 'showPopup', text: rephrasedText });
         chrome.action.openPopup();
       })
