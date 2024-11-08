@@ -52,3 +52,42 @@ This project is licensed under the MIT License.
 
 - This project is created using Aider and Mistral AI Large.
 - Special thanks to the developers of Gemini, OpenAI, and Ollama for their APIs and tools.
+
+## Adding to Chrome Web Store
+
+To add RephaserAI to the Chrome Web Store, follow these steps:
+
+1. **Prepare Your Extension**:
+   - Ensure your extension is complete and tested.
+   - Create a ZIP file of your extension's directory.
+
+2. **Create a Developer Account**:
+   - Go to the [Chrome Web Store Developer Dashboard](https://chrome.google.com/webstore/developer/dashboard).
+   - Sign in with your Google account.
+   - Pay the one-time registration fee if you haven't already.
+
+3. **Upload Your Extension**:
+   - Click on "Add new item" in the developer dashboard.
+   - Upload the ZIP file of your extension.
+   - Fill in the required details such as the extension's name, description, and screenshots.
+
+4. **Publish Your Extension**:
+   - Review the information and click on "Publish".
+   - Your extension will be reviewed by Google and, if approved, will be available in the Chrome Web Store.
+
+## Running Locally
+
+RephaserAI is open-source and can be run locally. You can use various AI models and services such as:
+
+- **Gemini**: [Gemini API](https://gemini.com)
+- **OpenAI**: [OpenAI API](https://openai.com)
+- **Grok**: [Grok AI](https://grok.com)
+- **Sambanova Cloud**: [Sambanova Cloud](https://sambanova.ai)
+- **Mistral AI**: [Mistral AI](https://mistral.ai)
+- **Ollama**: [Ollama](https://ollama.com)
+
+To run locally, set the base URL to `http://localhost:11434` in the "Advanced Settings" section of the popup.
+
+## Support
+
+For support, please visit the [Ollama website](https://ollama.com) or contact the developers of the respective AI services.
