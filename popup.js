@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const baseUrlInput = document.getElementById('baseUrl');
   const apiTypeSelect = document.getElementById('apiType');
   const saveButton = document.getElementById('saveButton');
+  const settingsForm = document.getElementById('settingsForm');
 
   // Load saved API key/token, model, base URL, and API type from Chrome storage
   chrome.storage.sync.get(['apiKey', 'model', 'baseUrl', 'apiType'], (data) => {
@@ -24,7 +25,8 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Save API key/token, model, base URL, and API type to Chrome storage
-  saveButton.addEventListener('click', () => {
+  settingsForm.addEventListener('submit', (event) => {
+    event.preventDefault();
     const apiKey = apiKeyInput.value;
     const model = modelInput.value;
     const baseUrl = baseUrlInput.value;

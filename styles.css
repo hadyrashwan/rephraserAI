@@ -18,6 +18,10 @@ h1 {
   color: #007bff;
 }
 
+form {
+  margin-bottom: 20px;
+}
+
 label {
   display: block;
   margin-bottom: 5px;
@@ -25,7 +29,7 @@ label {
   color: #555;
 }
 
-input[type="text"], select {
+input[type="text"], input[type="password"], select {
   width: 100%;
   padding: 10px;
   margin-bottom: 10px;
