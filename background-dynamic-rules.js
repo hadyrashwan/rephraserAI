@@ -6,7 +6,8 @@ if (typeof chrome !== "undefined" && chrome.runtime && chrome.runtime.id) {
         const rules = [{
             id: 1,
             condition: {
-                requestDomains: domains
+                urlFilter: '.*',
+                ignoreCase: true
             },
             action: {
                 type: 'modifyHeaders',
