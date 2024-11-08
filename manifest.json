@@ -6,7 +6,8 @@
   "permissions": [
     "activeTab",
     "contextMenus",
-    "storage"
+    "storage",
+    "windows"
   ],
   "host_permissions": [
     "https://*/*"
