@@ -37,14 +37,23 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
         });
       }
 
-      fetch(requestUrl, {
+      const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      };
+
+      // Set referrerPolicy to "no-referrer" if base URL contains localhost
+      const options = {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
+        headers: headers,
         body: requestBody
-      })
+      };
+
+      if (baseUrl.includes('localhost')) {
+        options.referrerPolicy = 'no-referrer';
+      }
+
+      fetch(requestUrl, options)
       .then(response => response.json())
       .then(data => {
         let rephrasedText;
