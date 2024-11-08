@@ -22,7 +22,7 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
       let requestUrl;
 
       if (apiType === 'gemini') {
-        requestUrl = `${baseUrl}/v1beta/models/${model}:generateContent?key=${apiKey}`;
+        requestUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
         requestBody = JSON.stringify({
           contents: [{
             parts: [{ text: `Please fix the grammar, spelling, and rephrase the following text: ${selectedText}` }]
