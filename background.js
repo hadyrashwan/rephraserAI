@@ -1,12 +1,12 @@
 chrome.runtime.onInstalled.addListener(() => {
   chrome.contextMenus.create({
     id: "rephrase",
-    title: "Rephrase with RephaserAI",
+    title: "Rephrase with RephraserAI",
     contexts: ["selection"]
   });
 });
 
-chrome.contextMenus.onClicked.addListener((info, tab) => {
+chrome.contextMenus.onClicked.addListener((info, _tab) => {
   if (info.menuItemId === "rephrase") {
     const selectedText = info.selectionText;
 
@@ -20,7 +20,16 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
       let requestBody;
       let requestUrl;
 
-      if (apiType === 'gemini') {
+      if(apiType === 'gemini' && !data.apiKey ){
+        requestUrl = `https://rephraserai.deno.dev/gemini/default`;
+        requestBody = JSON.stringify({
+          contents: [{
+            parts: [{ text: `Please fix the grammar, spelling, and rephrase the following text: ${selectedText}` }]
+          }]
+        });
+      }
+
+      else if (apiType === 'gemini') {
         requestUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
         requestBody = JSON.stringify({
           contents: [{

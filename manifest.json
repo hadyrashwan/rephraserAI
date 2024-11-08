@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "RephaserAI",
+  "name": "RephraserAI",
   "version": "1.0",
-  "description": "Rephrase selected text with RephaserAI",
+  "description": "Rephrase selected text with RephraserAI",
   "permissions": [
     "activeTab",
     "contextMenus",

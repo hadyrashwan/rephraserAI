@@ -1,10 +1,10 @@
-# RephaserAI Chrome Extension
+# RephraserAI Chrome Extension
 
-RephaserAI is a Chrome extension that allows you to rephrase selected text using advanced AI models. This extension is created using Aider and Mistral AI Large.
+RephraserAI is a Chrome extension that allows you to rephrase selected text using advanced AI models. This extension is created using Aider and Mistral AI Large.
 
 ## Features
 
-- **Rephrase Text**: Select any text on a webpage, right-click, and choose "Rephrase with RephaserAI" to get a rephrased version of the text.
+- **Rephrase Text**: Select any text on a webpage, right-click, and choose "Rephrase with RephraserAI" to get a rephrased version of the text.
 - **Custom API Key**: Use your own Gemini API key or any OpenAI-compatible API key.
 - **Model Selection**: Choose between different models, including Gemini and OpenAI models.
 - **Local Execution**: Run the extension locally using Ollama.
@@ -13,7 +13,7 @@ RephaserAI is a Chrome extension that allows you to rephrase selected text using
 
 1. Clone the repository:
    ```sh
-   git clone https://github.com/yourusername/rephaserai.git
+   git clone https://github.com/hadyrashwan/RephraserAI.git
    ```
 2. Load the extension in Chrome:
    - Open Chrome and go to `chrome://extensions/`.
@@ -23,7 +23,7 @@ RephaserAI is a Chrome extension that allows you to rephrase selected text using
 ## Usage
 
 1. Select the text you want to rephrase.
-2. Right-click and choose "Rephrase with RephaserAI".
+2. Right-click and choose "Rephrase with RephraserAI".
 3. The rephrased text will appear in a popup window.
 4. You can copy the rephrased text to the clipboard by clicking the "Copy" button.
 
@@ -55,7 +55,7 @@ This project is licensed under the MIT License.
 
 ## Adding to Chrome Web Store
 
-To add RephaserAI to the Chrome Web Store, follow these steps:
+To add RephraserAI to the Chrome Web Store, follow these steps:
 
 1. **Prepare Your Extension**:
    - Ensure your extension is complete and tested.
@@ -77,7 +77,7 @@ To add RephaserAI to the Chrome Web Store, follow these steps:
 
 ## Running Locally
 
-RephaserAI is open-source and can be run locally. You can use various AI models and services such as:
+RephraserAI is open-source and can be run locally. You can use various AI models and services such as:
 
 - **Gemini**: [Gemini API](https://gemini.com)
 - **OpenAI**: [OpenAI API](https://openai.com)
