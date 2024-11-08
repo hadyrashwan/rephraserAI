@@ -45,7 +45,7 @@ Allow users to select an **OpenAI-compatible model**. Refer to the documentation
 
 ### Wrap Our API Using Deno
 
-For security reasons, the API key should not be hard-coded. Wrap the API logic in a TypeScript file using **Deno**, and set the default configuration to point to `rephaserai-api.techcrafter.online/v1/gemini`, where I deploy my service.
+For security reasons, the API key should not be hard-coded. Wrap the default gemini option API logic in a TypeScript file using **Deno** leaving the rest of the options as they are, and set the default configuration to point to `rephaserai-api.techcrafter.online/v1/gemini`, where I deploy my service.
 
 ### Beautify
 
