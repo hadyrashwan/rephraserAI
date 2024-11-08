@@ -10,28 +10,49 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
   if (info.menuItemId === "rephrase") {
     const selectedText = info.selectionText;
 
-    // Load API key, model, base URL, and token from Chrome storage
-    chrome.storage.sync.get(['apiKey', 'model', 'baseUrl', 'token'], (data) => {
+    // Load API key, model, base URL, token, and API type from Chrome storage
+    chrome.storage.sync.get(['apiKey', 'model', 'baseUrl', 'token', 'apiType'], (data) => {
       const apiKey = data.apiKey || 'AIzaSyCR4Y7xry-5rz_m4IY51J2urBsAGsVw35o';
       const model = data.model || 'gemini-1.5-flash';
       const baseUrl = data.baseUrl || 'https://api.openai.com';
       const token = data.token || '';
+      const apiType = data.apiType || 'gemini';
 
-      fetch(`${baseUrl}/v1beta/models/${model}:generateContent?key=${apiKey}`, {
+      let requestBody;
+      let requestUrl;
+
+      if (apiType === 'gemini') {
+        requestUrl = `${baseUrl}/v1beta/models/${model}:generateContent?key=${apiKey}`;
+        requestBody = JSON.stringify({
+          contents: [{
+            parts: [{ text: `Please fix the grammar, spelling, and rephrase the following text: ${selectedText}` }]
+          }]
+        });
+      } else if (apiType === 'openai') {
+        requestUrl = `${baseUrl}/v1/completions`;
+        requestBody = JSON.stringify({
+          model: model,
+          prompt: `Please fix the grammar, spelling, and rephrase the following text: ${selectedText}`,
+          max_tokens: 150
+        });
+      }
+
+      fetch(requestUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({
-          contents: [{
-            parts: [{ text: `Please fix the grammar, spelling, and rephrase the following text: ${selectedText}` }]
-          }]
-        })
+        body: requestBody
       })
       .then(response => response.json())
       .then(data => {
-        const rephrasedText = data.candidates[0].content.parts[0].text;
+        let rephrasedText;
+        if (apiType === 'gemini') {
+          rephrasedText = data.candidates[0].content.parts[0].text;
+        } else if (apiType === 'openai') {
+          rephrasedText = data.choices[0].text.trim();
+        }
 
         // Store the rephrased text first
         chrome.storage.local.set({ 'popupData': rephrasedText }, () => {
