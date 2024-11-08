@@ -34,6 +34,9 @@ document.addEventListener('DOMContentLoaded', () => {
   copyButton.addEventListener('click', () => {
     rephrasedTextElement.select();
     document.execCommand('copy');
-    alert('Text copied to clipboard');
+    copyButton.textContent = 'Copied';
+    setTimeout(() => {
+      copyButton.textContent = 'Copy';
+    }, 2000);
   });
 });
