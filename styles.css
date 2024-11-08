@@ -66,3 +66,33 @@ textarea {
 #copyButton {
   margin-top: 20px;
 }
+
+#popup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+#settingsForm {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+#settingsForm label, #settingsForm input, #settingsForm select {
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+#settingsForm button {
+  width: 100%;
+}
+
+#rephrasedText {
+  height: 150px; /* Increase height to ensure textarea is visible */
+}
+
+#copyButton {
+  margin-top: 10px; /* Reduce margin to make the button closer to the textarea */
+}
