@@ -14,9 +14,6 @@
     "https://*/*",
     "http://localhost:11434/*"
   ],
-  "optional_hosts": [
-    "http://*/"
-  ],
   "background": {
     "service_worker": "background.js"
   },

@@ -12,7 +12,7 @@ chrome.contextMenus.onClicked.addListener((info, _tab) => {
 
     // Load API key/token, model, base URL, and API type from Chrome storage
     chrome.storage.sync.get(['apiKey', 'model', 'baseUrl', 'apiType'], (data) => {
-      const apiKey = data.apiKey || 'AIzaSyCR4Y7xry-5rz_m4IY51J2urBsAGsVw35o';
+      const apiKey = data.apiKey;
       const model = data.model || 'gemini-1.5-flash';
       const baseUrl = data.baseUrl || 'https://api.openai.com';
       const apiType = data.apiType || 'gemini';

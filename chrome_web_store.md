@@ -1,6 +1,6 @@
-# Adding RephraserAI to the Chrome Web Store
+# RephraserAI
 
-RephraserAI is a Chrome extension that allows you to rephrase selected text using advanced AI models. This extension is open-source and can be run locally. You can use various AI services such as Gemini, OpenAI, Grok, Sambanova Cloud, and Mistral AI.
+RephraserAI is a Chrome extension that allows you to rephrase selected text using advanced AI models. This extension is open-source and can be run locally. You can use various AI services such as Gemini (default), OpenAI, Grok, Sambanova Cloud, and Mistral AI.
 
 ## Usage
 
@@ -38,3 +38,7 @@ To run locally, set the base URL to `http://localhost:11434` in the "Advanced Se
 ## Support
 
 For support, please visit the [Ollama website](https://ollama.com) or contact the developers of the respective AI services.
+
+## Repository
+
+You can find the source code for RephraserAI on [GitHub](https://github.com/hadyrashwan/rephraserAI).
