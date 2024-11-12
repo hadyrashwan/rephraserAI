@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Suggestions</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 8px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      font-family: 'Inter', Arial, sans-serif;
+    }
+    .popup-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .left-section {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .icon {
+      width: 20px;
+      height: 20px;
+      background: #f0f0f0;
+      border-radius: 4px;
+    }
+    .correct-text {
+      font-size: 14px;
+      color: #333;
+    }
+    .basic-badge {
+      background: #e8f0fe;
+      color: #1a73e8;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+    .close-button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px;
+    }
+    .suggestions-container {
+      margin-top: 10px;
+    }
+    .suggestion-button {
+      background: #e8f0fe;
+      border: none;
+      border-radius: 4px;
+      padding: 6px 12px;
+      margin-right: 8px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      color: #1a73e8;
+    }
+    .suggestion-button:hover {
+      background: #d2e3fc;
+    }
+    .ignore-button {
+      background: none;
+      border: none;
+      color: #666;
+      cursor: pointer;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="popup-header">
+    <div class="left-section">
+      <div class="icon"></div>
+      <span class="correct-text">Correct</span>
+      <span class="basic-badge">Basic</span>
+    </div>
+    <button class="close-button">✕</button>
+  </div>
+  <div class="suggestions-container">
+    <div id="suggestions"></div>
+    <button class="ignore-button">Ignore</button>
+  </div>
+  <script src="floating-popup.js"></script>
+</body>
+</html>
