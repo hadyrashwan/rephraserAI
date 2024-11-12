@@ -53,12 +53,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
   overwriteButton.addEventListener('click', () => {
     chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+      console.log('Sending overwrite message to tab:', tabs[0].id);
       chrome.tabs.sendMessage(tabs[0].id, {
         action: 'overwriteSelectedText',
         text: rephrasedTextElement.value
       }, (response) => {
+        console.log('Overwrite response:', response);
         if (response && response.success) {
           overwriteButton.textContent = 'Overwritten';
+          setTimeout(() => {
+            overwriteButton.textContent = 'Overwrite';
+          }, 2000);
+        } else {
+          console.error('Overwrite failed:', response);
+          overwriteButton.textContent = 'Failed';
           setTimeout(() => {
             overwriteButton.textContent = 'Overwrite';
           }, 2000);
