@@ -33,6 +33,10 @@
       "all_frames": false
     }
   ],
+  "web_accessible_resources": [{
+    "resources": ["floating-popup.html", "images/*"],
+    "matches": ["<all_urls>"]
+  }],
   "icons": {
     "16": "images/icon16.png",
     "48": "images/icon48.png",
