@@ -31,16 +31,25 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   overwriteButton.addEventListener('click', () => {
-    const text = document.querySelector('#suggestions .suggestion-button').textContent;
-    chrome.runtime.sendMessage({
-      action: 'overwriteSelectedText',
-      text: text
-    }, (response) => {
-      if (response && response.success) {
-        overwriteButton.textContent = 'Done!';
-        setTimeout(() => {
-          chrome.runtime.sendMessage({ action: 'closeFloatingPopup' });
-        }, 1000);
+    const text = apiResponseContainer.textContent;
+    chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+      if (tabs[0]) {
+        chrome.tabs.sendMessage(tabs[0].id, {
+          action: 'overwriteSelectedText',
+          text: text
+        }, (response) => {
+          if (response && response.success) {
+            overwriteButton.textContent = 'Done!';
+            setTimeout(() => {
+              window.parent.postMessage({action: 'closePopup'}, '*');
+            }, 1000);
+          } else {
+            overwriteButton.textContent = 'Error';
+            setTimeout(() => {
+              overwriteButton.textContent = 'Overwrite';
+            }, 2000);
+          }
+        });
       }
     });
   });

@@ -3,6 +3,14 @@ console.log('RephraserAI Content Script Loaded');
 
 let floatingPopup = null;
 
+// Listen for messages from the floating popup iframe
+window.addEventListener('message', (event) => {
+  if (event.data.action === 'closePopup' && floatingPopup) {
+    document.body.removeChild(floatingPopup);
+    floatingPopup = null;
+  }
+});
+
 // Function to create and position the floating popup
 function createFloatingPopup(x, y) {
   if (floatingPopup) {
