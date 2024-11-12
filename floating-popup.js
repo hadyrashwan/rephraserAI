@@ -1,7 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
   const suggestionsContainer = document.getElementById('suggestions');
-  const closeButton = document.querySelector('.close-button');
-  const ignoreButton = document.querySelector('.ignore-button');
   const copyButton = document.getElementById('copyButton');
   const overwriteButton = document.getElementById('overwriteButton');
 
@@ -41,13 +39,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  closeButton.addEventListener('click', () => {
-    chrome.runtime.sendMessage({ action: 'closeFloatingPopup' });
-  });
-
-  ignoreButton.addEventListener('click', () => {
-    chrome.runtime.sendMessage({ action: 'closeFloatingPopup' });
-  });
 
   copyButton.addEventListener('click', () => {
     const text = document.querySelector('#suggestions .suggestion-button').textContent;
