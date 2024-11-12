@@ -1,6 +1,12 @@
 # RephraserAI Chrome Extension
 
-RephraserAI is a Chrome extension that allows you to rephrase selected text using advanced AI models. This extension is created using Aider and Mistral AI Large.
+RephraserAI is a Chrome extension that allows you to rephrase selected text using advanced AI models. This extension is created using Aider and Mistral AI Large. 
+
+![Chrome Web Store Version](https://img.shields.io/chrome-web-store/v/phghegndlmoinjnmmehpjfhanmpickno)
+
+## Install from Chrome Web Store
+- [Install the latest version](https://chromewebstore.google.com/detail/rephraserai/phghegndlmoinjnmmehpjfhanmpickno?authuser=0&hl=en-GB).
+
 
 ## Features
 
@@ -9,7 +15,7 @@ RephraserAI is a Chrome extension that allows you to rephrase selected text usin
 - **Model Selection**: Choose between different models, including Gemini and OpenAI models.
 - **Local Execution**: Run the extension locally using Ollama.
 
-## Installation
+## Install from source
 
 1. Clone the repository:
    ```sh
