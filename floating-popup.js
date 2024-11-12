@@ -13,17 +13,21 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
 
-  copyButton.addEventListener('click', async () => {
+  copyButton.addEventListener('click', () => {
     const text = apiResponseContainer.textContent;
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    document.body.appendChild(textArea);
+    textArea.select();
+    
     try {
-      await navigator.clipboard.writeText(text);
+      document.execCommand('copy');
       copyButton.textContent = 'Copied!';
-      setTimeout(() => {
-        copyButton.textContent = 'Copy';
-      }, 2000);
     } catch (err) {
       console.error('Failed to copy text:', err);
       copyButton.textContent = 'Error';
+    } finally {
+      document.body.removeChild(textArea);
       setTimeout(() => {
         copyButton.textContent = 'Copy';
       }, 2000);
