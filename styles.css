@@ -69,8 +69,15 @@ textarea {
   box-sizing: border-box;
 }
 
-#copyButton {
-  margin-top: 20px;
+.action-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+
+.action-buttons button {
+  flex: 1;
+  margin: 0 5px;
 }
 
 #popup {
@@ -97,8 +104,4 @@ textarea {
 
 #rephrasedText {
   height: 150px; /* Increase height to ensure textarea is visible */
-}
-
-#copyButton {
-  margin-top: 10px; /* Reduce margin to make the button closer to the textarea */
 }

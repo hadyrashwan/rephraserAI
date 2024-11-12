@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
   const rephrasedTextElement = document.getElementById('rephrasedText');
   const copyButton = document.getElementById('copyButton');
+  const overwriteButton = document.getElementById('overwriteButton');
   const apiKeyInput = document.getElementById('apiKey');
   const modelInput = document.getElementById('model');
   const baseUrlInput = document.getElementById('baseUrl');
@@ -48,5 +49,21 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
       copyButton.textContent = 'Copy';
     }, 2000);
+  });
+
+  overwriteButton.addEventListener('click', () => {
+    chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+      chrome.tabs.sendMessage(tabs[0].id, {
+        action: 'overwriteSelectedText',
+        text: rephrasedTextElement.value
+      }, (response) => {
+        if (response && response.success) {
+          overwriteButton.textContent = 'Overwritten';
+          setTimeout(() => {
+            overwriteButton.textContent = 'Overwrite';
+          }, 2000);
+        }
+      });
+    });
   });
 });
