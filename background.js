@@ -95,14 +95,11 @@ chrome.contextMenus.onClicked.addListener((info, _tab) => {
               action: 'showFloatingPopup'
             });
 
-            // Generate some variations as suggestions
-            const suggestions = generateSuggestions(selectedText);
-            
-            // Wait a bit for the popup to be created
+            // Send the API response to the popup
             setTimeout(() => {
               chrome.tabs.sendMessage(tabs[0].id, {
-                action: 'showSuggestions',
-                suggestions: suggestions
+                action: 'showApiResponse',
+                response: rephrasedText
               });
             }, 100);
           }

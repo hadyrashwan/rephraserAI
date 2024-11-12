@@ -1,47 +1,20 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const suggestionsContainer = document.getElementById('suggestions');
+  const apiResponseContainer = document.getElementById('apiResponse');
   const copyButton = document.getElementById('copyButton');
   const overwriteButton = document.getElementById('overwriteButton');
 
-  // Get suggestions from the background script
+  // Get API response from the background script
   chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if (request.action === 'showSuggestions') {
-      const suggestions = request.suggestions;
-      suggestionsContainer.innerHTML = '';
-      
-      // Create a div to hold all suggestion buttons
-      const buttonsDiv = document.createElement('div');
-      buttonsDiv.className = 'suggestion-buttons';
-      
-      suggestions.forEach(suggestion => {
-        const button = document.createElement('button');
-        button.className = 'suggestion-button';
-        button.textContent = suggestion;
-        button.addEventListener('click', () => {
-          // Update selected suggestion
-          document.querySelectorAll('.suggestion-button').forEach(btn => {
-            btn.classList.remove('selected');
-          });
-          button.classList.add('selected');
-          
-          // Enable copy and overwrite buttons
-          copyButton.disabled = false;
-          overwriteButton.disabled = false;
-        });
-        buttonsDiv.appendChild(button);
-      });
-      
-      suggestionsContainer.appendChild(buttonsDiv);
-      
-      // Initially disable action buttons until a suggestion is selected
-      copyButton.disabled = true;
-      overwriteButton.disabled = true;
+    if (request.action === 'showApiResponse') {
+      apiResponseContainer.textContent = request.response;
+      copyButton.disabled = false;
+      overwriteButton.disabled = false;
     }
   });
 
 
   copyButton.addEventListener('click', () => {
-    const text = document.querySelector('#suggestions .suggestion-button').textContent;
+    const text = apiResponseContainer.textContent;
     navigator.clipboard.writeText(text).then(() => {
       copyButton.textContent = 'Copied!';
       setTimeout(() => {
