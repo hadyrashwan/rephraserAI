@@ -1,6 +1,11 @@
 // Ensure content script is ready and listening
 console.log('RephraserAI Content Script Loaded');
 
+// Add debug logging for keyboard events
+document.addEventListener('keydown', (e) => {
+  console.log('Key pressed:', e.key, 'Meta:', e.metaKey, 'Ctrl:', e.ctrlKey);
+});
+
 // Handle keyboard shortcut
 document.addEventListener('keydown', (event) => {
   // Check for Cmd+U on Mac or Ctrl+U on Windows/Linux
@@ -62,9 +67,14 @@ document.addEventListener('keydown', (event) => {
           options.referrerPolicy = 'no-referrer';
         }
 
+        console.log('Making API request to:', requestUrl);
         fetch(requestUrl, options)
-        .then(response => response.json())
+        .then(response => {
+          console.log('API response status:', response.status);
+          return response.json();
+        })
         .then(data => {
+          console.log('API response data:', data);
           let rephrasedText;
           if (apiType === 'gemini') {
             rephrasedText = data.candidates[0].content.parts[0].text;

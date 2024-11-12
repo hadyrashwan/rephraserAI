@@ -1,11 +1,15 @@
+console.log('Floating popup script loaded');
 document.addEventListener('DOMContentLoaded', () => {
+  console.log('Floating popup DOM loaded');
   const apiResponseContainer = document.getElementById('apiResponse');
   const copyButton = document.getElementById('copyButton');
   const overwriteButton = document.getElementById('overwriteButton');
 
   // Get API response from the background script
   chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    console.log('Floating popup received message:', request);
     if (request.action === 'showApiResponse') {
+      console.log('Showing API response:', request.response);
       apiResponseContainer.textContent = request.response;
       copyButton.disabled = false;
       overwriteButton.disabled = false;
