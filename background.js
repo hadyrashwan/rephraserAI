@@ -37,7 +37,7 @@ chrome.contextMenus.onClicked.addListener((info, _tab) => {
           }]
         });
       } else if (apiType === 'openai') {
-        requestUrl = `${baseUrl}/v1/completions`;
+        requestUrl = `${baseUrl}/completions`;
         requestBody = JSON.stringify({
           model: model,
           prompt: `Please fix the grammar, spelling, and rephrase the following text: ${selectedText}`,
