@@ -7,7 +7,8 @@ document.addEventListener('keydown', (event) => {
   if ((event.metaKey || event.ctrlKey) && event.key === 'u') {
     event.preventDefault(); // Prevent default browser behavior
     const selection = window.getSelection();
-    if (selection.toString().trim().length > 0) {
+    const selectedText = selection.toString().trim();
+    if (selectedText.length > 0) {
       const range = selection.getRangeAt(0);
       const rect = range.getBoundingClientRect();
       const scrollX = window.scrollX || window.pageXOffset;
@@ -18,6 +19,9 @@ document.addEventListener('keydown', (event) => {
       const y = rect.bottom + scrollY + 5; // 5px gap
       
       createFloatingPopup(x, y);
+      
+      // Store selected text
+      chrome.storage.local.set({ 'popupData': selectedText });
     }
   }
 });
@@ -27,6 +31,14 @@ let floatingPopup = null;
 // Listen for messages from the floating popup iframe
 window.addEventListener('message', (event) => {
   if (event.data.action === 'closePopup' && floatingPopup) {
+    document.body.removeChild(floatingPopup);
+    floatingPopup = null;
+  }
+});
+
+// Close popup when clicking outside
+document.addEventListener('click', (event) => {
+  if (floatingPopup && !floatingPopup.contains(event.target)) {
     document.body.removeChild(floatingPopup);
     floatingPopup = null;
   }

@@ -57,4 +57,10 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   });
+
+  // Handle ignore button click
+  const ignoreButton = document.getElementById('ignoreButton');
+  ignoreButton.addEventListener('click', () => {
+    window.parent.postMessage({action: 'closePopup'}, '*');
+  });
 });
