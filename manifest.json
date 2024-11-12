@@ -8,7 +8,8 @@
     "contextMenus",
     "storage",
     "windows",
-    "declarativeNetRequest"
+    "declarativeNetRequest",
+    "clipboardWrite"
   ],
   "host_permissions": [
     "https://*/*",

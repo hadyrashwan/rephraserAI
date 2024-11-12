@@ -13,14 +13,21 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
 
-  copyButton.addEventListener('click', () => {
+  copyButton.addEventListener('click', async () => {
     const text = apiResponseContainer.textContent;
-    navigator.clipboard.writeText(text).then(() => {
+    try {
+      await navigator.clipboard.writeText(text);
       copyButton.textContent = 'Copied!';
       setTimeout(() => {
         copyButton.textContent = 'Copy';
       }, 2000);
-    });
+    } catch (err) {
+      console.error('Failed to copy text:', err);
+      copyButton.textContent = 'Error';
+      setTimeout(() => {
+        copyButton.textContent = 'Copy';
+      }, 2000);
+    }
   });
 
   overwriteButton.addEventListener('click', () => {
