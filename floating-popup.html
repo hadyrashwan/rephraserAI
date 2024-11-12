@@ -74,6 +74,12 @@
       gap: 8px;
       align-items: center;
     }
+    .suggestion-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
     .suggestion-button {
       background: #e8f0fe;
       border: none;
@@ -86,6 +92,14 @@
     }
     .suggestion-button:hover {
       background: #d2e3fc;
+    }
+    .suggestion-button.selected {
+      background: #1967d2;
+      color: white;
+    }
+    .action-button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
     }
     .action-buttons {
       display: flex;
