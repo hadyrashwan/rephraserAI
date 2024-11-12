@@ -9,7 +9,8 @@
     "storage",
     "windows",
     "declarativeNetRequest",
-    "clipboardWrite"
+    "clipboardWrite",
+    "scripting"
   ],
   "host_permissions": [
     "https://*/*",
