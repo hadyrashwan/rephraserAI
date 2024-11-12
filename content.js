@@ -22,23 +22,22 @@ function createFloatingPopup(x, y) {
   return floatingPopup;
 }
 
-// Listen for text selection
-document.addEventListener('mouseup', (event) => {
-  const selection = window.getSelection();
-  if (selection.toString().trim().length > 0) {
-    const range = selection.getRangeAt(0);
-    const rect = range.getBoundingClientRect();
-    const scrollX = window.scrollX || window.pageXOffset;
-    const scrollY = window.scrollY || window.pageYOffset;
-    
-    // Position popup below the selection
-    const x = rect.left + scrollX;
-    const y = rect.bottom + scrollY + 5; // 5px gap
-    
-    createFloatingPopup(x, y);
-  } else if (floatingPopup && !event.target.closest('iframe')) {
-    document.body.removeChild(floatingPopup);
-    floatingPopup = null;
+// Listen for messages from background script
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === 'showFloatingPopup') {
+    const selection = window.getSelection();
+    if (selection.toString().trim().length > 0) {
+      const range = selection.getRangeAt(0);
+      const rect = range.getBoundingClientRect();
+      const scrollX = window.scrollX || window.pageXOffset;
+      const scrollY = window.scrollY || window.pageYOffset;
+      
+      // Position popup below the selection
+      const x = rect.left + scrollX;
+      const y = rect.bottom + scrollY + 5; // 5px gap
+      
+      createFloatingPopup(x, y);
+    }
   }
 });
 

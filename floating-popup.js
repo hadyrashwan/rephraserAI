@@ -2,6 +2,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const suggestionsContainer = document.getElementById('suggestions');
   const closeButton = document.querySelector('.close-button');
   const ignoreButton = document.querySelector('.ignore-button');
+  const copyButton = document.getElementById('copyButton');
+  const overwriteButton = document.getElementById('overwriteButton');
 
   // Get suggestions from the parent window
   chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -30,5 +32,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
   ignoreButton.addEventListener('click', () => {
     chrome.runtime.sendMessage({ action: 'closeFloatingPopup' });
+  });
+
+  copyButton.addEventListener('click', () => {
+    const text = document.querySelector('#suggestions .suggestion-button').textContent;
+    navigator.clipboard.writeText(text).then(() => {
+      copyButton.textContent = 'Copied!';
+      setTimeout(() => {
+        copyButton.textContent = 'Copy';
+      }, 2000);
+    });
+  });
+
+  overwriteButton.addEventListener('click', () => {
+    const text = document.querySelector('#suggestions .suggestion-button').textContent;
+    chrome.runtime.sendMessage({
+      action: 'overwriteSelectedText',
+      text: text
+    }, (response) => {
+      if (response && response.success) {
+        overwriteButton.textContent = 'Done!';
+        setTimeout(() => {
+          chrome.runtime.sendMessage({ action: 'closeFloatingPopup' });
+        }, 1000);
+      }
+    });
   });
 });

@@ -87,6 +87,24 @@
     .suggestion-button:hover {
       background: #d2e3fc;
     }
+    .action-buttons {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .action-button {
+      background: #1967d2;
+      border: none;
+      border-radius: 4px;
+      padding: 6px 12px;
+      cursor: pointer;
+      font-size: 14px;
+      color: white;
+      font-weight: 500;
+    }
+    .action-button:hover {
+      background: #1557b0;
+    }
     .ignore-button {
       background: none;
       border: none;
@@ -115,7 +133,11 @@
     <p>Possible spelling mistake found.</p>
     <div class="suggestions-container">
       <div id="suggestions"></div>
-      <button class="ignore-button">Ignore</button>
+      <div class="action-buttons">
+        <button class="action-button" id="copyButton">Copy</button>
+        <button class="action-button" id="overwriteButton">Overwrite</button>
+        <button class="ignore-button">Ignore</button>
+      </div>
     </div>
   </div>
   <script src="floating-popup.js"></script>
