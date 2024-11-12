@@ -1,6 +1,27 @@
 // Ensure content script is ready and listening
 console.log('RephraserAI Content Script Loaded');
 
+// Handle keyboard shortcut
+document.addEventListener('keydown', (event) => {
+  // Check for Cmd+U on Mac or Ctrl+U on Windows/Linux
+  if ((event.metaKey || event.ctrlKey) && event.key === 'u') {
+    event.preventDefault(); // Prevent default browser behavior
+    const selection = window.getSelection();
+    if (selection.toString().trim().length > 0) {
+      const range = selection.getRangeAt(0);
+      const rect = range.getBoundingClientRect();
+      const scrollX = window.scrollX || window.pageXOffset;
+      const scrollY = window.scrollY || window.pageYOffset;
+      
+      // Position popup below the selection
+      const x = rect.left + scrollX;
+      const y = rect.bottom + scrollY + 5; // 5px gap
+      
+      createFloatingPopup(x, y);
+    }
+  }
+});
+
 let floatingPopup = null;
 
 // Listen for messages from the floating popup iframe

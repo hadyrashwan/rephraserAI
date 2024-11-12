@@ -1,3 +1,16 @@
+// Handle keyboard shortcut
+chrome.commands.onCommand.addListener((command) => {
+  if (command === "show-rephraser") {
+    chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+      if (tabs[0]) {
+        chrome.tabs.sendMessage(tabs[0].id, {
+          action: 'showFloatingPopup'
+        });
+      }
+    });
+  }
+});
+
 chrome.runtime.onInstalled.addListener(() => {
   chrome.contextMenus.create({
     id: "rephrase",

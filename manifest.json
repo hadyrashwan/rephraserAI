@@ -49,5 +49,14 @@
       "enabled": true,
       "path": "rules.json"
     }]
+  },
+  "commands": {
+    "show-rephraser": {
+      "suggested_key": {
+        "default": "Ctrl+U",
+        "mac": "Command+U"
+      },
+      "description": "Show RephraserAI popup"
+    }
   }
 }
