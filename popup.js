@@ -42,13 +42,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  copyButton.addEventListener('click', () => {
-    rephrasedTextElement.select();
-    document.execCommand('copy');
-    copyButton.textContent = 'Copied';
-    setTimeout(() => {
-      copyButton.textContent = 'Copy';
-    }, 2000);
+  copyButton.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(rephrasedTextElement.value);
+      copyButton.textContent = 'Copied!';
+      setTimeout(() => {
+        copyButton.textContent = 'Copy';
+      }, 2000);
+    } catch (err) {
+      console.error('Failed to copy text:', err);
+      copyButton.textContent = 'Error';
+      setTimeout(() => {
+        copyButton.textContent = 'Copy';
+      }, 2000);
+    }
   });
 
   overwriteButton.addEventListener('click', () => {
