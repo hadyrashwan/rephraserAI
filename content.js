@@ -68,7 +68,7 @@ document.addEventListener('keydown', (event) => {
         }
 
         console.log('Making API request to:', requestUrl);
-        fetch(requestUrl, options)
+        return fetch(requestUrl, options)
         .then(response => {
           console.log('API response status:', response.status);
           return response.json();
@@ -171,7 +171,16 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'overwriteSelectedText') {
     // Wrap the entire logic in a try-catch for more comprehensive error handling
     try {
+    // let text
+    // // Load the rephrased text from Chrome storage
+    // chrome.storage.local.get(['popupData'], (result) => {
+    //   if (result.popupData) {
+    //     text = result.popupData;
+    //   }
+    // });
+
       const selection = window.getSelection();
+      console.log(selection)
       
       if (!selection) {
         console.error('No selection found');
@@ -179,7 +188,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         return false;
       }
       
-      if (selection.rangeCount > 0) {
+      if (selection.rangeCount > 0 ) {
         const range = selection.getRangeAt(0);
         const selectedText = selection.toString();
 
