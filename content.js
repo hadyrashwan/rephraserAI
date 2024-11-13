@@ -171,16 +171,30 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'overwriteSelectedText') {
     // Wrap the entire logic in a try-catch for more comprehensive error handling
     try {
+      // Try multiple methods to get selection
       const selection = window.getSelection();
-      console.log(selection)
-      
-      if (!selection) {
-        console.error('No selection found');
-        sendResponse({success: false, error: 'No selection'});
-        return false;
+      const activeElement = document.activeElement;
+
+      console.log('Selection:', selection);
+      console.log('Active Element:', activeElement);
+
+      // Check if active element is an input or textarea
+      if (activeElement && (activeElement.tagName === 'TEXTAREA' || activeElement.tagName === 'INPUT')) {
+        const start = activeElement.selectionStart;
+        const end = activeElement.selectionEnd;
+        
+        if (start !== undefined && end !== undefined) {
+          const currentValue = activeElement.value;
+          activeElement.value = currentValue.slice(0, start) + request.text + currentValue.slice(end);
+          
+          console.log('Text replaced in input/textarea');
+          sendResponse({success: true});
+          return true;
+        }
       }
-      
-      if (selection.rangeCount > 0 ) {
+
+      // Fallback to standard selection replacement
+      if (selection && selection.rangeCount > 0) {
         const range = selection.getRangeAt(0);
         const selectedText = selection.toString();
 
@@ -195,16 +209,28 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           console.log('Text successfully replaced');
           sendResponse({success: true});
           return true;
-        } else {
-          console.error('No text selected');
-          sendResponse({success: false, error: 'No text selected'});
-          return false;
         }
-      } else {
-        console.error('No range found');
-        sendResponse({success: false, error: 'No range found'});
-        return false;
       }
+
+      // If no selection or input method works, try contenteditable
+      const editableElement = document.querySelector('[contenteditable="true"]');
+      if (editableElement) {
+        const selection = window.getSelection();
+        const range = document.createRange();
+        range.selectNodeContents(editableElement);
+        selection.removeAllRanges();
+        selection.addRange(range);
+
+        document.execCommand('insertText', false, request.text);
+        
+        console.log('Text replaced in contenteditable');
+        sendResponse({success: true});
+        return true;
+      }
+
+      console.error('Unable to replace text: No suitable element found');
+      sendResponse({success: false, error: 'No suitable element found for text replacement'});
+      return false;
     } catch (error) {
       console.error('Unexpected error in overwrite process:', error);
       sendResponse({success: false, error: error.toString()});
