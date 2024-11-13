@@ -2,6 +2,7 @@ console.log('Floating popup script loaded');
 document.addEventListener('DOMContentLoaded', () => {
   console.log('Floating popup DOM loaded');
   const apiResponseContainer = document.getElementById('apiResponse');
+  let text
   const copyButton = document.getElementById('copyButton');
   const overwriteButton = document.getElementById('overwriteButton');
 
@@ -15,6 +16,13 @@ document.addEventListener('DOMContentLoaded', () => {
       overwriteButton.disabled = false;
     }
   });
+
+    // Load the rephrased text from Chrome storage
+    chrome.storage.local.get(['popupData'], (result) => {
+      if (result.popupData) {
+        text = result.popupData;
+      }
+    });
 
 
   copyButton.addEventListener('click', () => {
@@ -38,13 +46,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  overwriteButton.addEventListener('click', () => {
-    const text = apiResponseContainer.textContent;
+  overwriteButton.addEventListener('click', async() => {
+
+    console.log('Floating popup Sending overwrite message to tab:', tabs[0].id);
+
+    // const text = apiResponseContainer.textContent;
     chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
       if (tabs[0]) {
         chrome.tabs.sendMessage(tabs[0].id, {
           action: 'overwriteSelectedText',
-          text: text
+          text
         }, (response) => {
           if (response && response.success) {
             overwriteButton.textContent = 'Done!';
