@@ -46,30 +46,49 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  overwriteButton.addEventListener('click', async() => {
-
-    console.log('Floating popup Sending overwrite message to tab:', tabs[0].id);
-
-    // const text = apiResponseContainer.textContent;
+  overwriteButton.addEventListener('click', () => {
     chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
-      if (tabs[0]) {
-        chrome.tabs.sendMessage(tabs[0].id, {
-          action: 'overwriteSelectedText',
-          text
-        }, (response) => {
-          if (response && response.success) {
-            overwriteButton.textContent = 'Done!';
-            setTimeout(() => {
-              window.parent.postMessage({action: 'closePopup'}, '*');
-            }, 1000);
-          } else {
-            overwriteButton.textContent = 'Error';
-            setTimeout(() => {
-              overwriteButton.textContent = 'Overwrite';
-            }, 2000);
-          }
-        });
+      if (!tabs || tabs.length === 0) {
+        console.error('No active tab found');
+        overwriteButton.textContent = 'Error';
+        setTimeout(() => {
+          overwriteButton.textContent = 'Overwrite';
+        }, 2000);
+        return;
       }
+
+      console.log('Sending overwrite message to tab:', tabs[0].id);
+      
+      // Check if the content script is ready
+      chrome.tabs.sendMessage(tabs[0].id, {
+        action: 'overwriteSelectedText',
+        text: apiResponseContainer.textContent
+      }, (response) => {
+        // Check for runtime.lastError first
+        if (chrome.runtime.lastError) {
+          console.error('Runtime error:', chrome.runtime.lastError);
+          overwriteButton.textContent = 'Connection Error';
+          setTimeout(() => {
+            overwriteButton.textContent = 'Overwrite';
+          }, 2000);
+          return;
+        }
+
+        console.log('Overwrite response:', response);
+        if (response && response.success) {
+          overwriteButton.textContent = 'Overwritten';
+          setTimeout(() => {
+            overwriteButton.textContent = 'Overwrite';
+            window.parent.postMessage({action: 'closePopup'}, '*');
+          }, 2000);
+        } else {
+          console.error('Overwrite failed:', response);
+          overwriteButton.textContent = 'Failed';
+          setTimeout(() => {
+            overwriteButton.textContent = 'Overwrite';
+          }, 2000);
+        }
+      });
     });
   });
 
