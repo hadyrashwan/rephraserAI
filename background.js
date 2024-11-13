@@ -65,7 +65,7 @@ chrome.commands.onCommand.addListener((command) => {
               options.referrerPolicy = 'no-referrer';
             }
 
-            fetch(requestUrl, options)
+            return fetch(requestUrl, options)
             .then(response => response.json())
             .then(data => {
               let rephrasedText;
@@ -175,7 +175,7 @@ chrome.contextMenus.onClicked.addListener((info, _tab) => {
         rebuildRules('localhost');
       }
 
-      fetch(requestUrl, options)
+      return fetch(requestUrl, options)
       .then(response => response.json())
       .then(data => {
         let rephrasedText;
