@@ -171,14 +171,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'overwriteSelectedText') {
     // Wrap the entire logic in a try-catch for more comprehensive error handling
     try {
-    // let text
-    // // Load the rephrased text from Chrome storage
-    // chrome.storage.local.get(['popupData'], (result) => {
-    //   if (result.popupData) {
-    //     text = result.popupData;
-    //   }
-    // });
-
       const selection = window.getSelection();
       console.log(selection)
       
