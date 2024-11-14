@@ -32,7 +32,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const model = modelInput.value;
     const baseUrl = baseUrlInput.value;
     const apiType = apiTypeSelect.value;
-    chrome.storage.sync.set({ apiKey, model, baseUrl, apiType });
+    
+    // Temporarily change save button text to provide feedback
+    saveButton.textContent = 'Saving...';
+    saveButton.disabled = true;
+
+    chrome.storage.sync.set({ apiKey, model, baseUrl, apiType }, () => {
+      saveButton.textContent = 'Saved!';
+      
+      // Revert back to original state after 2 seconds
+      setTimeout(() => {
+        saveButton.textContent = 'Save';
+        saveButton.disabled = false;
+      }, 2000);
+    });
   });
 
   // Load the rephrased text from Chrome storage

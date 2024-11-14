@@ -3,19 +3,14 @@ document.addEventListener('DOMContentLoaded', () => {
   console.log('Floating popup DOM loaded');
   const apiResponseContainer = document.getElementById('apiResponse');
   const copyButton = document.getElementById('copyButton');
-  const overwriteButton = document.getElementById('overwriteButton');
 
-  // Get API response from the background script
-  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    console.log('Floating popup received message:', request);
-    if (request.action === 'showApiResponse') {
-      console.log('Showing API response:', request.response);
-      apiResponseContainer.textContent = request.response;
+  // Retrieve text from local storage
+  chrome.storage.local.get(['popupData'], (result) => {
+    if (result.popupData) {
+      apiResponseContainer.textContent = result.popupData;
       copyButton.disabled = false;
-      overwriteButton.disabled = false;
     }
   });
-
 
   copyButton.addEventListener('click', () => {
     const text = apiResponseContainer.textContent;
@@ -36,30 +31,6 @@ document.addEventListener('DOMContentLoaded', () => {
         copyButton.textContent = 'Copy';
       }, 2000);
     }
-  });
-
-  overwriteButton.addEventListener('click', () => {
-    const text = apiResponseContainer.textContent;
-    chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
-      if (tabs[0]) {
-        chrome.tabs.sendMessage(tabs[0].id, {
-          action: 'overwriteSelectedText',
-          text: text
-        }, (response) => {
-          if (response && response.success) {
-            overwriteButton.textContent = 'Done!';
-            setTimeout(() => {
-              window.parent.postMessage({action: 'closePopup'}, '*');
-            }, 1000);
-          } else {
-            overwriteButton.textContent = 'Error';
-            setTimeout(() => {
-              overwriteButton.textContent = 'Overwrite';
-            }, 2000);
-          }
-        });
-      }
-    });
   });
 
   // Handle ignore button click

@@ -24,79 +24,31 @@ document.addEventListener('keydown', (event) => {
         let requestBody;
         let requestUrl;
 
-        if(apiType === 'gemini' && !data.apiKey ){
-          requestUrl = `https://rephraserai.deno.dev/gemini/default`;
-          requestBody = JSON.stringify({
-            contents: [{
-              parts: [{ text: `Please fix the grammar, spelling, and rephrase the following text: ${selectedText}` }]
-            }]
-          });
-        }
+        // Send message to background script to handle rephrasing
+        chrome.runtime.sendMessage({
+          action: 'rephrase',
+          text: selectedText
+        }, (response) => {
+          if (response.success) {
+            const rephrasedText = response.rephrasedText;
 
-        else if (apiType === 'gemini') {
-          requestUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-          requestBody = JSON.stringify({
-            contents: [{
-              parts: [{ text: `Please fix the grammar, spelling, and rephrase the following text: ${selectedText}` }]
-            }]
-          });
-        } else if (apiType === 'openai') {
-          requestUrl = `${baseUrl}/completions`;
-          requestBody = JSON.stringify({
-            model: model,
-            prompt: `Please fix the grammar, spelling, and rephrase the following text: ${selectedText}`,
-            max_tokens: 150
-          });
-        }
+            // Store the rephrased text
+            chrome.storage.local.set({ 'popupData': rephrasedText });
 
-        const headers = {
-          'Content-Type': 'application/json'
-        };
-
-        if (apiType === 'openai') {
-          headers['Authorization'] = `Bearer ${apiKey}`;
-        }
-
-        const options = {
-          method: 'POST',
-          headers: headers,
-          body: requestBody
-        };
-
-        if (baseUrl.includes('localhost')) {
-          options.referrerPolicy = 'no-referrer';
-        }
-
-        console.log('Making API request to:', requestUrl);
-        fetch(requestUrl, options)
-        .then(response => {
-          console.log('API response status:', response.status);
-          return response.json();
-        })
-        .then(data => {
-          console.log('API response data:', data);
-          let rephrasedText;
-          if (apiType === 'gemini') {
-            rephrasedText = data.candidates[0].content.parts[0].text;
-          } else if (apiType === 'openai') {
-            rephrasedText = data.choices[0].text.trim();
+            const range = selection.getRangeAt(0);
+            const rect = range.getBoundingClientRect();
+            const scrollX = window.scrollX || window.pageXOffset;
+            const scrollY = window.scrollY || window.pageYOffset;
+            
+            // Position popup below the selection
+            const x = rect.left + scrollX;
+            const y = rect.bottom + scrollY + 5; // 5px gap
+            
+            createFloatingPopup(x, y);
+          } else {
+            console.error('Rephrasing failed:', response.error);
           }
-
-          // Store the rephrased text
-          chrome.storage.local.set({ 'popupData': rephrasedText });
-
-          const range = selection.getRangeAt(0);
-          const rect = range.getBoundingClientRect();
-          const scrollX = window.scrollX || window.pageXOffset;
-          const scrollY = window.scrollY || window.pageYOffset;
-          
-          // Position popup below the selection
-          const x = rect.left + scrollX;
-          const y = rect.bottom + scrollY + 5; // 5px gap
-          
-          createFloatingPopup(x, y);
-        })
-        .catch(error => console.error('Error:', error));
+        });
       });
     }
   }
@@ -110,6 +62,8 @@ window.addEventListener('message', (event) => {
     document.body.removeChild(floatingPopup);
     floatingPopup = null;
   }
+  
+  // Removed replace text handling
 });
 
 // Close popup when clicking outside
@@ -159,7 +113,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 });
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  console.log('Content script received message:', request);
+  console.log('Background script received message:', request);
   
   // Add a check to ensure the message is from the extension
   if (!sender.id || sender.id !== chrome.runtime.id) {
@@ -168,18 +122,48 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     return false;
   }
   
+  if (request.action === 'rephrase') {
+    chrome.storage.sync.get(['apiKey', 'model', 'baseUrl', 'apiType'], (data) => {
+      makeRephrasingRequest(request.text, data)
+        .then(rephrasedText => {
+          chrome.storage.local.set({ 'popupData': rephrasedText });
+          sendResponse({success: true, rephrasedText: rephrasedText});
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          sendResponse({success: false, error: error.toString()});
+        });
+    });
+    return true; // Indicates an asynchronous response
+  }
+  
   if (request.action === 'overwriteSelectedText') {
     // Wrap the entire logic in a try-catch for more comprehensive error handling
     try {
+      // Try multiple methods to get selection
       const selection = window.getSelection();
-      
-      if (!selection) {
-        console.error('No selection found');
-        sendResponse({success: false, error: 'No selection'});
-        return false;
+      const activeElement = document.activeElement;
+
+      console.log('Selection:', selection);
+      console.log('Active Element:', activeElement);
+
+      // Check if active element is an input or textarea
+      if (activeElement && (activeElement.tagName === 'TEXTAREA' || activeElement.tagName === 'INPUT')) {
+        const start = activeElement.selectionStart;
+        const end = activeElement.selectionEnd;
+        
+        if (start !== undefined && end !== undefined) {
+          const currentValue = activeElement.value;
+          activeElement.value = currentValue.slice(0, start) + request.text + currentValue.slice(end);
+          
+          console.log('Text replaced in input/textarea');
+          sendResponse({success: true});
+          return true;
+        }
       }
-      
-      if (selection.rangeCount > 0) {
+
+      // Fallback to standard selection replacement
+      if (selection && selection.rangeCount > 0) {
         const range = selection.getRangeAt(0);
         const selectedText = selection.toString();
 
@@ -194,16 +178,28 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           console.log('Text successfully replaced');
           sendResponse({success: true});
           return true;
-        } else {
-          console.error('No text selected');
-          sendResponse({success: false, error: 'No text selected'});
-          return false;
         }
-      } else {
-        console.error('No range found');
-        sendResponse({success: false, error: 'No range found'});
-        return false;
       }
+
+      // If no selection or input method works, try contenteditable
+      const editableElement = document.querySelector('[contenteditable="true"]');
+      if (editableElement) {
+        const selection = window.getSelection();
+        const range = document.createRange();
+        range.selectNodeContents(editableElement);
+        selection.removeAllRanges();
+        selection.addRange(range);
+
+        document.execCommand('insertText', false, request.text);
+        
+        console.log('Text replaced in contenteditable');
+        sendResponse({success: true});
+        return true;
+      }
+
+      console.error('Unable to replace text: No suitable element found');
+      sendResponse({success: false, error: 'No suitable element found for text replacement'});
+      return false;
     } catch (error) {
       console.error('Unexpected error in overwrite process:', error);
       sendResponse({success: false, error: error.toString()});

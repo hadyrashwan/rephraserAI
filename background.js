@@ -13,85 +13,23 @@ chrome.commands.onCommand.addListener((command) => {
         
         const selectedText = result;
         if (selectedText) {
-          // Load API key/token, model, base URL, and API type from Chrome storage
           chrome.storage.sync.get(['apiKey', 'model', 'baseUrl', 'apiType'], (data) => {
-            const apiKey = data.apiKey;
-            const model = data.model || 'gemini-1.5-flash';
-            const baseUrl = data.baseUrl || 'https://api.openai.com';
-            const apiType = data.apiType || 'gemini';
+            makeRephrasingRequest(selectedText, data)
+              .then(rephrasedText => {
+                chrome.storage.local.set({ 'popupData': rephrasedText });
 
-            let requestBody;
-            let requestUrl;
-
-            if(apiType === 'gemini' && !data.apiKey ){
-              requestUrl = `https://rephraserai.deno.dev/gemini/default`;
-              requestBody = JSON.stringify({
-                contents: [{
-                  parts: [{ text: `Please fix the grammar, spelling, and rephrase the following text: ${selectedText}` }]
-                }]
-              });
-            }
-            else if (apiType === 'gemini') {
-              requestUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-              requestBody = JSON.stringify({
-                contents: [{
-                  parts: [{ text: `Please fix the grammar, spelling, and rephrase the following text: ${selectedText}` }]
-                }]
-              });
-            } else if (apiType === 'openai') {
-              requestUrl = `${baseUrl}/completions`;
-              requestBody = JSON.stringify({
-                model: model,
-                prompt: `Please fix the grammar, spelling, and rephrase the following text: ${selectedText}`,
-                max_tokens: 150
-              });
-            }
-
-            const headers = {
-              'Content-Type': 'application/json'
-            };
-
-            if (apiType === 'openai') {
-              headers['Authorization'] = `Bearer ${apiKey}`;
-            }
-
-            const options = {
-              method: 'POST',
-              headers: headers,
-              body: requestBody
-            };
-
-            if (baseUrl.includes('localhost')) {
-              options.referrerPolicy = 'no-referrer';
-            }
-
-            fetch(requestUrl, options)
-            .then(response => response.json())
-            .then(data => {
-              let rephrasedText;
-              if (apiType === 'gemini') {
-                rephrasedText = data.candidates[0].content.parts[0].text;
-              } else if (apiType === 'openai') {
-                rephrasedText = data.choices[0].text.trim();
-              }
-
-              // Store the rephrased text
-              chrome.storage.local.set({ 'popupData': rephrasedText });
-
-              // Send message to content script to show floating popup
-              chrome.tabs.sendMessage(tabs[0].id, {
-                action: 'showFloatingPopup'
-              });
-
-              // Send the API response to the popup
-              setTimeout(() => {
                 chrome.tabs.sendMessage(tabs[0].id, {
-                  action: 'showApiResponse',
-                  response: rephrasedText
+                  action: 'showFloatingPopup'
                 });
-              }, 100);
-            })
-            .catch(error => console.error('Error:', error));
+
+                setTimeout(() => {
+                  chrome.tabs.sendMessage(tabs[0].id, {
+                    action: 'showApiResponse',
+                    response: rephrasedText
+                  });
+                }, 100);
+              })
+              .catch(error => console.error('Error:', error));
           });
         }
       }
@@ -114,99 +52,101 @@ function generateSuggestions(text) {
   return [text, 'for', 'form', 'fort', 'flora'];
 }
 
+// Shared function for API request
+function makeRephrasingRequest(selectedText, data) {
+  const apiKey = data.apiKey;
+  const model = data.model || 'gemini-1.5-flash';
+  const baseUrl = data.baseUrl || 'https://api.openai.com';
+  const apiType = data.apiType || 'gemini';
+
+  let requestBody;
+  let requestUrl;
+
+  if(apiType === 'gemini' && !data.apiKey ){
+    requestUrl = `https://rephraserai.deno.dev/gemini/default`;
+    requestBody = JSON.stringify({
+      contents: [{
+        parts: [{ text: `Rephrase the following text concisely, maintaining its original meaning. Only return the rephrased text without any additional commentary or explanation:
+
+${selectedText}` }]
+      }]
+    });
+  }
+  else if (apiType === 'gemini') {
+    requestUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+    requestBody = JSON.stringify({
+      contents: [{
+        parts: [{ text: `Please fix the grammar, spelling, and rephrase the following text: ${selectedText}` }]
+      }]
+    });
+  } else if (apiType === 'openai') {
+    requestUrl = `${baseUrl}/completions`;
+    requestBody = JSON.stringify({
+      model: model,
+      prompt: `Rephrase the following text concisely, maintaining its original meaning. Only return the rephrased text without any additional commentary or explanation:
+
+${selectedText}`,
+      max_tokens: 150
+    });
+  }
+
+  const headers = {
+    'Content-Type': 'application/json'
+  };
+
+  if (apiType === 'openai') {
+    headers['Authorization'] = `Bearer ${apiKey}`;
+  }
+
+  const options = {
+    method: 'POST',
+    headers: headers,
+    body: requestBody
+  };
+
+  if (baseUrl.includes('localhost')) {
+    options.referrerPolicy = 'no-referrer';
+    rebuildRules('localhost');
+  }
+
+  return fetch(requestUrl, options)
+    .then(response => response.json())
+    .then(data => {
+      let rephrasedText;
+      if (apiType === 'gemini') {
+        rephrasedText = data.candidates[0].content.parts[0].text;
+      } else if (apiType === 'openai') {
+        rephrasedText = data.choices[0].text.trim();
+      }
+      return rephrasedText;
+    });
+}
+
 chrome.contextMenus.onClicked.addListener((info, _tab) => {
   if (info.menuItemId === "rephrase") {
     const selectedText = info.selectionText;
 
-    // Load API key/token, model, base URL, and API type from Chrome storage
     chrome.storage.sync.get(['apiKey', 'model', 'baseUrl', 'apiType'], (data) => {
-      const apiKey = data.apiKey;
-      const model = data.model || 'gemini-1.5-flash';
-      const baseUrl = data.baseUrl || 'https://api.openai.com';
-      const apiType = data.apiType || 'gemini';
+      makeRephrasingRequest(selectedText, data)
+        .then(rephrasedText => {
+          chrome.storage.local.set({ 'popupData': rephrasedText });
 
-      let requestBody;
-      let requestUrl;
-
-      if(apiType === 'gemini' && !data.apiKey ){
-        requestUrl = `https://rephraserai.deno.dev/gemini/default`;
-        requestBody = JSON.stringify({
-          contents: [{
-            parts: [{ text: `Please fix the grammar, spelling, and rephrase the following text: ${selectedText}` }]
-          }]
-        });
-      }
-
-      else if (apiType === 'gemini') {
-        requestUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-        requestBody = JSON.stringify({
-          contents: [{
-            parts: [{ text: `Please fix the grammar, spelling, and rephrase the following text: ${selectedText}` }]
-          }]
-        });
-      } else if (apiType === 'openai') {
-        requestUrl = `${baseUrl}/completions`;
-        requestBody = JSON.stringify({
-          model: model,
-          prompt: `Please fix the grammar, spelling, and rephrase the following text: ${selectedText}`,
-          max_tokens: 150
-        });
-      }
-
-      const headers = {
-        'Content-Type': 'application/json'
-      };
-
-      // Add Authorization header only for OpenAI
-      if (apiType === 'openai') {
-        headers['Authorization'] = `Bearer ${apiKey}`;
-      }
-
-      // Set referrerPolicy to "no-referrer" if base URL contains localhost
-      const options = {
-        method: 'POST',
-        headers: headers,
-        body: requestBody
-      };
-
-      if (baseUrl.includes('localhost')) {
-        options.referrerPolicy = 'no-referrer';
-        // Apply dynamic rules to modify headers
-        rebuildRules('localhost');
-      }
-
-      fetch(requestUrl, options)
-      .then(response => response.json())
-      .then(data => {
-        let rephrasedText;
-        if (apiType === 'gemini') {
-          rephrasedText = data.candidates[0].content.parts[0].text;
-        } else if (apiType === 'openai') {
-          rephrasedText = data.choices[0].text.trim();
-        }
-
-        // Store the rephrased text
-        chrome.storage.local.set({ 'popupData': rephrasedText });
-
-        // Get the active tab to send suggestions to the floating popup
-        chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
-          if (tabs[0]) {
-            // Send message to content script to show floating popup
-            chrome.tabs.sendMessage(tabs[0].id, {
-              action: 'showFloatingPopup'
-            });
-
-            // Send the API response to the popup
-            setTimeout(() => {
+          chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+            if (tabs[0]) {
               chrome.tabs.sendMessage(tabs[0].id, {
-                action: 'showApiResponse',
-                response: rephrasedText
+                action: 'showFloatingPopup'
               });
-            }, 100);
-          }
-        });
-      })
-      .catch(error => console.error('Error:', error));
+
+              setTimeout(() => {
+                chrome.tabs.sendMessage(tabs[0].id, {
+                  action: 'showApiResponse',
+                  response: rephrasedText
+                });
+              }, 100);
+            }
+          });
+        })
+        .catch(error => console.error('Error:', error));
     });
   }
 });
