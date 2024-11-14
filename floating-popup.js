@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const apiResponseContainer = document.getElementById('apiResponse');
   let text
   const copyButton = document.getElementById('copyButton');
+  const replaceButton = document.getElementById('replaceButton');
 
   // Get API response from the background script
   chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -12,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
       console.log('Showing API response:', request.response);
       apiResponseContainer.textContent = request.response;
       copyButton.disabled = false;
+      replaceButton.disabled = false;
     }
   });
 
@@ -34,6 +36,23 @@ document.addEventListener('DOMContentLoaded', () => {
         copyButton.textContent = 'Copy';
       }, 2000);
     }
+  });
+
+  // Handle replace button click
+  replaceButton.addEventListener('click', () => {
+    const text = apiResponseContainer.textContent;
+    
+    // Send message to parent window to replace text
+    window.parent.postMessage({
+      action: 'replaceText', 
+      text: text
+    }, '*');
+
+    replaceButton.textContent = 'Replaced!';
+    setTimeout(() => {
+      replaceButton.textContent = 'Replace';
+      window.parent.postMessage({action: 'closePopup'}, '*');
+    }, 2000);
   });
 
   // Handle ignore button click

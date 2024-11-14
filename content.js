@@ -110,6 +110,20 @@ window.addEventListener('message', (event) => {
     document.body.removeChild(floatingPopup);
     floatingPopup = null;
   }
+  
+  if (event.data.action === 'replaceText') {
+    // Reuse the existing overwrite logic from the popup
+    chrome.runtime.sendMessage({
+      action: 'overwriteSelectedText',
+      text: event.data.text
+    }, (response) => {
+      if (response && response.success) {
+        console.log('Text replaced successfully');
+      } else {
+        console.error('Failed to replace text');
+      }
+    });
+  }
 });
 
 // Close popup when clicking outside
