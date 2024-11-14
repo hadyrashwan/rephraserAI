@@ -24,79 +24,31 @@ document.addEventListener('keydown', (event) => {
         let requestBody;
         let requestUrl;
 
-        if(apiType === 'gemini' && !data.apiKey ){
-          requestUrl = `https://rephraserai.deno.dev/gemini/default`;
-          requestBody = JSON.stringify({
-            contents: [{
-              parts: [{ text: `Please fix the grammar, spelling, and rephrase the following text: ${selectedText}` }]
-            }]
-          });
-        }
+        // Send message to background script to handle rephrasing
+        chrome.runtime.sendMessage({
+          action: 'rephrase',
+          text: selectedText
+        }, (response) => {
+          if (response.success) {
+            const rephrasedText = response.rephrasedText;
 
-        else if (apiType === 'gemini') {
-          requestUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-          requestBody = JSON.stringify({
-            contents: [{
-              parts: [{ text: `Please fix the grammar, spelling, and rephrase the following text: ${selectedText}` }]
-            }]
-          });
-        } else if (apiType === 'openai') {
-          requestUrl = `${baseUrl}/completions`;
-          requestBody = JSON.stringify({
-            model: model,
-            prompt: `Please fix the grammar, spelling, and rephrase the following text: ${selectedText}`,
-            max_tokens: 150
-          });
-        }
+            // Store the rephrased text
+            chrome.storage.local.set({ 'popupData': rephrasedText });
 
-        const headers = {
-          'Content-Type': 'application/json'
-        };
-
-        if (apiType === 'openai') {
-          headers['Authorization'] = `Bearer ${apiKey}`;
-        }
-
-        const options = {
-          method: 'POST',
-          headers: headers,
-          body: requestBody
-        };
-
-        if (baseUrl.includes('localhost')) {
-          options.referrerPolicy = 'no-referrer';
-        }
-
-        console.log('Making API request to:', requestUrl);
-        return fetch(requestUrl, options)
-        .then(response => {
-          console.log('API response status:', response.status);
-          return response.json();
-        })
-        .then(data => {
-          console.log('API response data:', data);
-          let rephrasedText;
-          if (apiType === 'gemini') {
-            rephrasedText = data.candidates[0].content.parts[0].text;
-          } else if (apiType === 'openai') {
-            rephrasedText = data.choices[0].text.trim();
+            const range = selection.getRangeAt(0);
+            const rect = range.getBoundingClientRect();
+            const scrollX = window.scrollX || window.pageXOffset;
+            const scrollY = window.scrollY || window.pageYOffset;
+            
+            // Position popup below the selection
+            const x = rect.left + scrollX;
+            const y = rect.bottom + scrollY + 5; // 5px gap
+            
+            createFloatingPopup(x, y);
+          } else {
+            console.error('Rephrasing failed:', response.error);
           }
-
-          // Store the rephrased text
-          chrome.storage.local.set({ 'popupData': rephrasedText });
-
-          const range = selection.getRangeAt(0);
-          const rect = range.getBoundingClientRect();
-          const scrollX = window.scrollX || window.pageXOffset;
-          const scrollY = window.scrollY || window.pageYOffset;
-          
-          // Position popup below the selection
-          const x = rect.left + scrollX;
-          const y = rect.bottom + scrollY + 5; // 5px gap
-          
-          createFloatingPopup(x, y);
-        })
-        .catch(error => console.error('Error:', error));
+        });
       });
     }
   }
@@ -161,13 +113,28 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 });
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  console.log('Content script received message:', request);
+  console.log('Background script received message:', request);
   
   // Add a check to ensure the message is from the extension
   if (!sender.id || sender.id !== chrome.runtime.id) {
     console.error('Message from unauthorized source');
     sendResponse({success: false, error: 'Unauthorized message source'});
     return false;
+  }
+  
+  if (request.action === 'rephrase') {
+    chrome.storage.sync.get(['apiKey', 'model', 'baseUrl', 'apiType'], (data) => {
+      makeRephrasingRequest(request.text, data)
+        .then(rephrasedText => {
+          chrome.storage.local.set({ 'popupData': rephrasedText });
+          sendResponse({success: true, rephrasedText: rephrasedText});
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          sendResponse({success: false, error: error.toString()});
+        });
+    });
+    return true; // Indicates an asynchronous response
   }
   
   if (request.action === 'overwriteSelectedText') {
