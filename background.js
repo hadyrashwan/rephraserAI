@@ -66,7 +66,9 @@ function makeRephrasingRequest(selectedText, data) {
     requestUrl = `https://rephraserai.deno.dev/gemini/default`;
     requestBody = JSON.stringify({
       contents: [{
-        parts: [{ text: `Please fix the grammar, spelling, and rephrase the following text: ${selectedText}` }]
+        parts: [{ text: `Rephrase the following text concisely, maintaining its original meaning. Only return the rephrased text without any additional commentary or explanation:
+
+${selectedText}` }]
       }]
     });
   }
@@ -81,7 +83,9 @@ function makeRephrasingRequest(selectedText, data) {
     requestUrl = `${baseUrl}/completions`;
     requestBody = JSON.stringify({
       model: model,
-      prompt: `Please fix the grammar, spelling, and rephrase the following text: ${selectedText}`,
+      prompt: `Rephrase the following text concisely, maintaining its original meaning. Only return the rephrased text without any additional commentary or explanation:
+
+${selectedText}`,
       max_tokens: 150
     });
   }
