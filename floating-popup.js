@@ -3,14 +3,12 @@ document.addEventListener('DOMContentLoaded', () => {
   console.log('Floating popup DOM loaded');
   const apiResponseContainer = document.getElementById('apiResponse');
   const copyButton = document.getElementById('copyButton');
-  const replaceButton = document.getElementById('replaceButton');
 
   // Retrieve text from local storage
   chrome.storage.local.get(['popupData'], (result) => {
     if (result.popupData) {
       apiResponseContainer.textContent = result.popupData;
       copyButton.disabled = false;
-      replaceButton.disabled = false;
     }
   });
 
@@ -33,23 +31,6 @@ document.addEventListener('DOMContentLoaded', () => {
         copyButton.textContent = 'Copy';
       }, 2000);
     }
-  });
-
-  // Handle replace button click
-  replaceButton.addEventListener('click', () => {
-    const text = apiResponseContainer.textContent;
-    
-    // Send message to parent window to replace text
-    window.parent.postMessage({
-      action: 'replaceText', 
-      text: text
-    }, '*');
-
-    replaceButton.textContent = 'Replaced!';
-    setTimeout(() => {
-      replaceButton.textContent = 'Replace';
-      window.parent.postMessage({action: 'closePopup'}, '*');
-    }, 2000);
   });
 
   // Handle ignore button click
