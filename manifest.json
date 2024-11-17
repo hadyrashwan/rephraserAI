@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "RephraserAI",
+  "name": "Rephraser AI",
   "version": "1.0.3",
-  "description": "Rephrase selected text with RephraserAI",
+  "description": "Rephrase selected text effortlessly with Rephraser AI – refine your writing and grammar in a single click.",
   "permissions": [
     "activeTab",
     "contextMenus",
