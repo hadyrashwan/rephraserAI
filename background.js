@@ -62,13 +62,32 @@ function makeRephrasingRequest(selectedText, data) {
   let requestBody;
   let requestUrl;
 
+  const prompt = `You are a rephrasing tool designed to improve the clarity and correctness of text. Your task is to take the given text, fix any spelling and grammar issues, and make it easier to understand while maintaining its original meaning. Here's what you need to do:
+
+1. First, carefully read the following text:
+
+<original_text>
+${selectedText}
+</original_text>
+
+2. Now, follow these steps to rephrase the text:
+   a. Correct any spelling errors.
+   b. Fix grammatical mistakes.
+   c. Simplify complex sentences or phrases to improve clarity.
+   d. Ensure the rephrased text maintains the original meaning.
+   e. Make the text more concise if possible, without losing important information.
+
+3. Provide your rephrased version of the text. Do not include any explanations, comments, or additional information. Simply output the improved text.
+
+Remember, your goal is to make the text clearer and more correct while preserving its original message. Do not add new information or change the intended meaning of the original text.
+
+Output your rephrased text directly, without any additional formatting or tags.`
+
   if(apiType === 'gemini' && !data.apiKey ){
     requestUrl = `https://rephraserai.deno.dev/gemini/default`;
     requestBody = JSON.stringify({
       contents: [{
-        parts: [{ text: `Rephrase the following text concisely, maintaining its original meaning. Only return the rephrased text without any additional commentary or explanation:
-
-${selectedText}` }]
+        parts: [{ text: prompt }]
       }]
     });
   }
@@ -76,16 +95,14 @@ ${selectedText}` }]
     requestUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
     requestBody = JSON.stringify({
       contents: [{
-        parts: [{ text: `Please fix the grammar, spelling, and rephrase the following text: ${selectedText}` }]
+        parts: [{ text: prompt }]
       }]
     });
   } else if (apiType === 'openai') {
     requestUrl = `${baseUrl}/completions`;
     requestBody = JSON.stringify({
       model: model,
-      prompt: `Rephrase the following text concisely, maintaining its original meaning. Only return the rephrased text without any additional commentary or explanation:
-
-${selectedText}`,
+      prompt: prompt,
       max_tokens: 150
     });
   }
