@@ -196,24 +196,3 @@ const log = {
   info: (tag, data) => console.log(`[${tag}]`, data),
   error: (tag, data) => console.error(`[${tag}]`, data)
 };
-
-// Add essential logs to key points
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  log.info('Message', request.action);
-  
-  if (request.action === 'rephrase') {
-    chrome.storage.sync.get(['apiKey', 'model', 'baseUrl', 'apiType'], (data) => {
-      makeRephrasingRequest(request.text, data)
-        .then(rephrasedText => {
-          log.info('Success', 'Rephrasing completed');
-          chrome.storage.local.set({ 'popupData': rephrasedText });
-          sendResponse({ success: true, rephrasedText });
-        })
-        .catch(error => {
-          log.error('API Error', error);
-          sendResponse({ success: false, error: error.toString() });
-        });
-    });
-    return true; // Indicates async response
-  }
-});
