@@ -1,5 +1,6 @@
 // Handle keyboard shortcut
 chrome.commands.onCommand.addListener((command) => {
+  log.info('Command', command);
   if (command === "show-rephraser") {
     chrome.tabs.query({active: true, currentWindow: true}, async (tabs) => {
       if (tabs[0]) {
@@ -36,6 +37,7 @@ chrome.commands.onCommand.addListener((command) => {
 });
 
 chrome.runtime.onInstalled.addListener(() => {
+  log.info('Install', 'Creating context menu');
   chrome.contextMenus.create({
     id: "rephrase",
     title: "Rephrase with RephraserAI",
@@ -46,6 +48,12 @@ chrome.runtime.onInstalled.addListener(() => {
 
 // Shared function for API request
 function makeRephrasingRequest(selectedText, data) {
+  log.info('Request', {
+    apiType: data.apiType,
+    model: data.model,
+    hasApiKey: !!data.apiKey
+  });
+
   const apiKey = data.apiKey;
   const model = data.model || 'gemini-1.5-flash';
   const baseUrl = data.baseUrl || 'https://api.openai.com';
@@ -119,7 +127,10 @@ Output your rephrased text directly, without any additional formatting or tags.`
   }
 
   return fetch(requestUrl, options)
-    .then(response => response.json())
+    .then(response => {
+      log.info('Response', response.status);
+      return response.json();
+    })
     .then(data => {
       let rephrasedText;
       if (apiType === 'gemini') {
@@ -128,34 +139,37 @@ Output your rephrased text directly, without any additional formatting or tags.`
         rephrasedText = data.choices[0].text.trim();
       }
       return rephrasedText;
+    })
+    .catch(error => {
+      log.error('Fetch', error);
+      throw error;
     });
 }
 
-chrome.contextMenus.onClicked.addListener((info, _tab) => {
+chrome.contextMenus.onClicked.addListener( (info, _tab) => {
+  log.info('ContextMenu', info.menuItemId);
   if (info.menuItemId === "rephrase") {
     const selectedText = info.selectionText;
 
-    chrome.storage.sync.get(['apiKey', 'model', 'baseUrl', 'apiType'], (data) => {
-      makeRephrasingRequest(selectedText, data)
-        .then(rephrasedText => {
-          chrome.storage.local.set({ 'popupData': rephrasedText });
+    chrome.storage.sync.get(['apiKey', 'model', 'baseUrl', 'apiType'], async(data) => {
+      try{
 
-          chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
-            if (tabs[0]) {
-              chrome.tabs.sendMessage(tabs[0].id, {
-                action: 'showFloatingPopup'
-              });
-
-              setTimeout(() => {
-                chrome.tabs.sendMessage(tabs[0].id, {
-                  action: 'showApiResponse',
-                  response: rephrasedText
-                });
-              }, 100);
-            }
-          });
-        })
-        .catch(error => console.error('Error:', error));
+        const rephrasedText = await makeRephrasingRequest(selectedText, data)
+        chrome.storage.local.set({ 'popupData': rephrasedText });
+        
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        
+        if (tab?.id) {
+          // Notify content script to show the floating popup
+          await chrome.tabs.sendMessage(tab.id, { action: 'showFloatingPopup' });
+          
+          // Notify content script with the API response
+          await chrome.tabs.sendMessage(tab.id, { action: 'showApiResponse', response: rephrasedText });
+        }
+        
+      } catch (error) {
+        console.error('Error:', error);
+      }
     });
   }
 });
@@ -163,6 +177,7 @@ chrome.contextMenus.onClicked.addListener((info, _tab) => {
 var rebuildRules = undefined;
 if (typeof chrome !== "undefined" && chrome.runtime && chrome.runtime.id) {
     rebuildRules = async function (domain) {
+        log.info('Rules', `Rebuilding for ${domain}`);
         const domains = [domain];
         /** @type {chrome.declarativeNetRequest.Rule[]} */
         const rules = [{
@@ -185,16 +200,26 @@ if (typeof chrome !== "undefined" && chrome.runtime && chrome.runtime.id) {
         });
     }
 }
+// Simple logging wrapper
+const log = {
+  info: (tag, data) => console.log(`[${tag}]`, data),
+  error: (tag, data) => console.error(`[${tag}]`, data)
+};
 
+// Add essential logs to key points
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  log.info('Message', request.action);
+  
   if (request.action === 'rephrase') {
     chrome.storage.sync.get(['apiKey', 'model', 'baseUrl', 'apiType'], (data) => {
       makeRephrasingRequest(request.text, data)
         .then(rephrasedText => {
+          log.info('Success', 'Rephrasing completed');
           chrome.storage.local.set({ 'popupData': rephrasedText });
           sendResponse({ success: true, rephrasedText });
         })
         .catch(error => {
+          log.error('API Error', error);
           sendResponse({ success: false, error: error.toString() });
         });
     });
