@@ -1,10 +1,5 @@
 // Ensure content script is ready and listening
-console.log('RephraserAI Content Script Loaded');
 
-// Add debug logging for keyboard events
-document.addEventListener('keydown', (e) => {
-  console.log('Key pressed:', e.key, 'Meta:', e.metaKey, 'Ctrl:', e.ctrlKey);
-});
 
 // Handle keyboard shortcut
 document.addEventListener('keydown', (event) => {
@@ -66,13 +61,6 @@ window.addEventListener('message', (event) => {
   // Removed replace text handling
 });
 
-// Close popup when clicking outside
-document.addEventListener('click', (event) => {
-  if (floatingPopup && !floatingPopup.contains(event.target)) {
-    document.body.removeChild(floatingPopup);
-    floatingPopup = null;
-  }
-});
 
 // Function to create and position the floating popup
 function createFloatingPopup(x, y) {
@@ -113,7 +101,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 });
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  console.log('Background script received message:', request);
   
   // Add a check to ensure the message is from the extension
   if (!sender.id || sender.id !== chrome.runtime.id) {
@@ -144,8 +131,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       const selection = window.getSelection();
       const activeElement = document.activeElement;
 
-      console.log('Selection:', selection);
-      console.log('Active Element:', activeElement);
 
       // Check if active element is an input or textarea
       if (activeElement && (activeElement.tagName === 'TEXTAREA' || activeElement.tagName === 'INPUT')) {
@@ -156,7 +141,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           const currentValue = activeElement.value;
           activeElement.value = currentValue.slice(0, start) + request.text + currentValue.slice(end);
           
-          console.log('Text replaced in input/textarea');
           sendResponse({success: true});
           return true;
         }
@@ -167,15 +151,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         const range = selection.getRangeAt(0);
         const selectedText = selection.toString();
 
-        console.log('Selected text:', selectedText);
-        console.log('Replacement text:', request.text);
 
         if (selectedText) {
           range.deleteContents();
           const textNode = document.createTextNode(request.text);
           range.insertNode(textNode);
           
-          console.log('Text successfully replaced');
           sendResponse({success: true});
           return true;
         }
@@ -192,7 +173,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
         document.execCommand('insertText', false, request.text);
         
-        console.log('Text replaced in contenteditable');
         sendResponse({success: true});
         return true;
       }
@@ -209,9 +189,4 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   
   // Return true to indicate the listener will send a response asynchronously
   return true;
-});
-
-// Confirm content script is fully loaded
-window.addEventListener('load', () => {
-  console.log('RephraserAI Content Script fully loaded');
 });
