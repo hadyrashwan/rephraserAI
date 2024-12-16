@@ -18,30 +18,29 @@ document.addEventListener('keydown', (event) => {
 
         let requestBody;
         let requestUrl;
-
         // Send message to background script to handle rephrasing
         chrome.runtime.sendMessage({
           action: 'rephrase',
           text: selectedText
         }, (response) => {
-          if (response.success) {
+          if (chrome.runtime.lastError) {
+            console.error('Message handling error:', chrome.runtime.lastError);
+            return;
+          }
+          
+          if (response && response.success) {
             const rephrasedText = response.rephrasedText;
-
-            // Store the rephrased text
             chrome.storage.local.set({ 'popupData': rephrasedText });
-
+            
             const range = selection.getRangeAt(0);
             const rect = range.getBoundingClientRect();
             const scrollX = window.scrollX || window.pageXOffset;
             const scrollY = window.scrollY || window.pageYOffset;
             
-            // Position popup below the selection
             const x = rect.left + scrollX;
-            const y = rect.bottom + scrollY + 5; // 5px gap
+            const y = rect.bottom + scrollY + 5;
             
             createFloatingPopup(x, y);
-          } else {
-            console.error('Rephrasing failed:', response.error);
           }
         });
       });
@@ -98,6 +97,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       createFloatingPopup(x, y);
     }
   }
+  return true;
 });
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {

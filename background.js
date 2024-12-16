@@ -185,3 +185,25 @@ if (typeof chrome !== "undefined" && chrome.runtime && chrome.runtime.id) {
         });
     }
 }
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.action === 'rephrase') {
+    // Process the rephrasing
+    makeRephrasingRequest(message.text, data)
+      .then(rephrasedText => {
+        sendResponse({
+          success: true,
+          rephrasedText: rephrasedText
+        });
+      })
+      .catch(error => {
+        console.error('Error: - background.js line 200', error); 
+        sendResponse({
+          success: false,
+          error: error.message
+        });
+      });
+    
+    return true; // Will respond asynchronously
+  }
+});
