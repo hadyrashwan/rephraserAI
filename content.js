@@ -78,9 +78,8 @@ function createFloatingPopup(x, y) {
   return floatingPopup;
 }
 
-// Listen for messages from background script
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === 'showFloatingPopup') {
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.action === 'showFloatingPopup' || message.action === 'showApiResponse') {
     const selection = window.getSelection();
     if (selection.toString().trim().length > 0) {
       const range = selection.getRangeAt(0);
@@ -94,8 +93,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       
       createFloatingPopup(x, y);
     }
+    sendResponse({received: true});
+    return true;
   }
-  return true;
 });
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
