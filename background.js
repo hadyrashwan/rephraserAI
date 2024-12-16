@@ -1,45 +1,3 @@
-// Handle keyboard shortcut
-chrome.commands.onCommand.addListener(async (command) => {
-  log.info('Command', command);
-
-  if (command === "show-rephraser") {
-    try {
-      // Get the active tab
-      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-
-      if (tab?.id) {
-        // Execute script to get the selected text
-        const [{ result: selectedText }] = await chrome.scripting.executeScript({
-          target: { tabId: tab.id },
-          function: () => window.getSelection()?.toString() || ''
-        });
-
-        if (!selectedText) {
-          log.warn('No text selected');
-          return;
-        }
-
-        // Retrieve API settings from storage
-        const data = await chrome.storage.sync.get(['apiKey', 'model', 'baseUrl', 'apiType']);
-
-        // Make the rephrasing request
-        const rephrasedText = await makeRephrasingRequest(selectedText, data);
-
-        // Save the rephrased text to local storage
-        await chrome.storage.local.set({ popupData: rephrasedText });
-
-        // Notify the content script to display the floating popup and response
-        await chrome.tabs.sendMessage(tab.id, { action: 'showFloatingPopup' });
-        await chrome.tabs.sendMessage(tab.id, {
-          action: 'showApiResponse',
-          response: rephrasedText
-        });
-      }
-    } catch (error) {
-      console.error('Error in command handler:', error);
-    }
-  }
-});
 
 
 chrome.runtime.onInstalled.addListener(() => {
@@ -152,33 +110,60 @@ Output your rephrased text directly, without any additional formatting or tags.`
     });
 }
 
-chrome.contextMenus.onClicked.addListener( (info, _tab) => {
-  log.info('ContextMenu', info.menuItemId);
-  if (info.menuItemId === "rephrase") {
-    const selectedText = info.selectionText;
-
-    chrome.storage.sync.get(['apiKey', 'model', 'baseUrl', 'apiType'], async(data) => {
-      try{
-
-        const rephrasedText = await makeRephrasingRequest(selectedText, data)
-        chrome.storage.local.set({ 'popupData': rephrasedText });
-        
-        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-        
-        if (tab?.id) {
-          // Notify content script to show the floating popup
-          await chrome.tabs.sendMessage(tab.id, { action: 'showFloatingPopup' });
-          
-          // Notify content script with the API response
-          await chrome.tabs.sendMessage(tab.id, { action: 'showApiResponse', response: rephrasedText });
-        }
-        
-      } catch (error) {
-        console.error('Error:', error);
-      }
-    });
+chrome.commands.onCommand.addListener((command) => {
+  log.info('Command', command);
+  if (command === "show-rephraser") {
+    handleRephrase();
   }
 });
+
+chrome.contextMenus.onClicked.addListener((info, _tab) => {
+  if (info.menuItemId === "rephrase") {
+    handleRephrase();
+  }
+});
+
+// Reusable handler for the rephraser functionality
+async function handleRephrase() {
+  try {
+    // Get the active tab
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+
+    if (!tab?.id) {
+      log.warn('No active tab found');
+      return;
+    }
+
+    // Execute script to get the selected text
+    const [{ result: selectedText }] = await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      function: () => window.getSelection()?.toString() || ''
+    });
+
+    if (!selectedText) {
+      log.warn('No text selected');
+      return;
+    }
+
+    // Retrieve API settings from storage
+    const data = await chrome.storage.sync.get(['apiKey', 'model', 'baseUrl', 'apiType']);
+
+    // Make the rephrasing request
+    const rephrasedText = await makeRephrasingRequest(selectedText, data);
+
+    // Save the rephrased text to local storage
+    await chrome.storage.local.set({ popupData: rephrasedText });
+
+    // Notify the content script to display the floating popup and response
+    await chrome.tabs.sendMessage(tab.id, { action: 'showFloatingPopup' });
+    await chrome.tabs.sendMessage(tab.id, {
+      action: 'showApiResponse',
+      response: rephrasedText
+    });
+  } catch (error) {
+    console.error('Error in handleRephraser:', error);
+  }
+}
 
 var rebuildRules = undefined;
 if (typeof chrome !== "undefined" && chrome.runtime && chrome.runtime.id) {
