@@ -1,7 +1,5 @@
 // Handle keyboard shortcut
-console.log('Background script loaded');
 chrome.commands.onCommand.addListener((command) => {
-  console.log('Command received:', command);
   if (command === "show-rephraser") {
     chrome.tabs.query({active: true, currentWindow: true}, async (tabs) => {
       if (tabs[0]) {
@@ -45,12 +43,6 @@ chrome.runtime.onInstalled.addListener(() => {
   });
 });
 
-// Helper function to generate suggestion variations
-function generateSuggestions(text) {
-  // For now, return some sample suggestions
-  // In a real implementation, this would use AI or other logic
-  return [text, 'for', 'form', 'fort', 'flora'];
-}
 
 // Shared function for API request
 function makeRephrasingRequest(selectedText, data) {
