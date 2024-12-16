@@ -22,16 +22,14 @@ document.addEventListener('keydown', (event) => {
         chrome.runtime.sendMessage({
           action: 'rephrase',
           text: selectedText
-        }, (response) => {
+        }, function(response) {
           if (chrome.runtime.lastError) {
-            console.error('Message handling error:', chrome.runtime.lastError);
+            console.log(chrome.runtime.lastError);
             return;
           }
           
           if (response && response.success) {
             const rephrasedText = response.rephrasedText;
-            chrome.storage.local.set({ 'popupData': rephrasedText });
-            
             const range = selection.getRangeAt(0);
             const rect = range.getBoundingClientRect();
             const scrollX = window.scrollX || window.pageXOffset;

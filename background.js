@@ -186,24 +186,18 @@ if (typeof chrome !== "undefined" && chrome.runtime && chrome.runtime.id) {
     }
 }
 
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.action === 'rephrase') {
-    // Process the rephrasing
-    makeRephrasingRequest(message.text, data)
-      .then(rephrasedText => {
-        sendResponse({
-          success: true,
-          rephrasedText: rephrasedText
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === 'rephrase') {
+    chrome.storage.sync.get(['apiKey', 'model', 'baseUrl', 'apiType'], (data) => {
+      makeRephrasingRequest(request.text, data)
+        .then(rephrasedText => {
+          chrome.storage.local.set({ 'popupData': rephrasedText });
+          sendResponse({ success: true, rephrasedText });
+        })
+        .catch(error => {
+          sendResponse({ success: false, error: error.toString() });
         });
-      })
-      .catch(error => {
-        console.error('Error: - background.js line 200', error); 
-        sendResponse({
-          success: false,
-          error: error.message
-        });
-      });
-    
-    return true; // Will respond asynchronously
+    });
+    return true; // Indicates async response
   }
 });
