@@ -1,40 +1,46 @@
 // Handle keyboard shortcut
-chrome.commands.onCommand.addListener((command) => {
+chrome.commands.onCommand.addListener(async (command) => {
   log.info('Command', command);
+
   if (command === "show-rephraser") {
-    chrome.tabs.query({active: true, currentWindow: true}, async (tabs) => {
-      if (tabs[0]) {
-        // Execute script to get selected text
-        const [{result}] = await chrome.scripting.executeScript({
-          target: {tabId: tabs[0].id},
-          function: () => window.getSelection().toString()
+    try {
+      // Get the active tab
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+
+      if (tab?.id) {
+        // Execute script to get the selected text
+        const [{ result: selectedText }] = await chrome.scripting.executeScript({
+          target: { tabId: tab.id },
+          function: () => window.getSelection()?.toString() || ''
         });
-        
-        const selectedText = result;
-        if (selectedText) {
-          chrome.storage.sync.get(['apiKey', 'model', 'baseUrl', 'apiType'], (data) => {
-            makeRephrasingRequest(selectedText, data)
-              .then(rephrasedText => {
-                chrome.storage.local.set({ 'popupData': rephrasedText });
 
-                chrome.tabs.sendMessage(tabs[0].id, {
-                  action: 'showFloatingPopup'
-                });
-
-                setTimeout(() => {
-                  chrome.tabs.sendMessage(tabs[0].id, {
-                    action: 'showApiResponse',
-                    response: rephrasedText
-                  });
-                }, 100);
-              })
-              .catch(error => console.error('Error:', error));
-          });
+        if (!selectedText) {
+          log.warn('No text selected');
+          return;
         }
+
+        // Retrieve API settings from storage
+        const data = await chrome.storage.sync.get(['apiKey', 'model', 'baseUrl', 'apiType']);
+
+        // Make the rephrasing request
+        const rephrasedText = await makeRephrasingRequest(selectedText, data);
+
+        // Save the rephrased text to local storage
+        await chrome.storage.local.set({ popupData: rephrasedText });
+
+        // Notify the content script to display the floating popup and response
+        await chrome.tabs.sendMessage(tab.id, { action: 'showFloatingPopup' });
+        await chrome.tabs.sendMessage(tab.id, {
+          action: 'showApiResponse',
+          response: rephrasedText
+        });
       }
-    });
+    } catch (error) {
+      console.error('Error in command handler:', error);
+    }
   }
 });
+
 
 chrome.runtime.onInstalled.addListener(() => {
   log.info('Install', 'Creating context menu');
