@@ -1,43 +1,7 @@
-// Handle keyboard shortcut
-console.log('Background script loaded');
-chrome.commands.onCommand.addListener((command) => {
-  console.log('Command received:', command);
-  if (command === "show-rephraser") {
-    chrome.tabs.query({active: true, currentWindow: true}, async (tabs) => {
-      if (tabs[0]) {
-        // Execute script to get selected text
-        const [{result}] = await chrome.scripting.executeScript({
-          target: {tabId: tabs[0].id},
-          function: () => window.getSelection().toString()
-        });
-        
-        const selectedText = result;
-        if (selectedText) {
-          chrome.storage.sync.get(['apiKey', 'model', 'baseUrl', 'apiType'], (data) => {
-            makeRephrasingRequest(selectedText, data)
-              .then(rephrasedText => {
-                chrome.storage.local.set({ 'popupData': rephrasedText });
 
-                chrome.tabs.sendMessage(tabs[0].id, {
-                  action: 'showFloatingPopup'
-                });
-
-                setTimeout(() => {
-                  chrome.tabs.sendMessage(tabs[0].id, {
-                    action: 'showApiResponse',
-                    response: rephrasedText
-                  });
-                }, 100);
-              })
-              .catch(error => console.error('Error:', error));
-          });
-        }
-      }
-    });
-  }
-});
 
 chrome.runtime.onInstalled.addListener(() => {
+  log.info('Install', 'Creating context menu');
   chrome.contextMenus.create({
     id: "rephrase",
     title: "Rephrase with RephraserAI",
@@ -45,15 +9,14 @@ chrome.runtime.onInstalled.addListener(() => {
   });
 });
 
-// Helper function to generate suggestion variations
-function generateSuggestions(text) {
-  // For now, return some sample suggestions
-  // In a real implementation, this would use AI or other logic
-  return [text, 'for', 'form', 'fort', 'flora'];
-}
-
 // Shared function for API request
 function makeRephrasingRequest(selectedText, data) {
+  log.info('Request', {
+    apiType: data.apiType,
+    model: data.model,
+    hasApiKey: !!data.apiKey
+  });
+
   const apiKey = data.apiKey;
   const model = data.model || 'gemini-1.5-flash';
   const baseUrl = data.baseUrl || 'https://api.openai.com';
@@ -127,7 +90,10 @@ Output your rephrased text directly, without any additional formatting or tags.`
   }
 
   return fetch(requestUrl, options)
-    .then(response => response.json())
+    .then(response => {
+      log.info('Response', response.status);
+      return response.json();
+    })
     .then(data => {
       let rephrasedText;
       if (apiType === 'gemini') {
@@ -136,41 +102,72 @@ Output your rephrased text directly, without any additional formatting or tags.`
         rephrasedText = data.choices[0].text.trim();
       }
       return rephrasedText;
+    })
+    .catch(error => {
+      log.error('Fetch', error);
+      throw error;
     });
 }
 
-chrome.contextMenus.onClicked.addListener((info, _tab) => {
-  if (info.menuItemId === "rephrase") {
-    const selectedText = info.selectionText;
-
-    chrome.storage.sync.get(['apiKey', 'model', 'baseUrl', 'apiType'], (data) => {
-      makeRephrasingRequest(selectedText, data)
-        .then(rephrasedText => {
-          chrome.storage.local.set({ 'popupData': rephrasedText });
-
-          chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
-            if (tabs[0]) {
-              chrome.tabs.sendMessage(tabs[0].id, {
-                action: 'showFloatingPopup'
-              });
-
-              setTimeout(() => {
-                chrome.tabs.sendMessage(tabs[0].id, {
-                  action: 'showApiResponse',
-                  response: rephrasedText
-                });
-              }, 100);
-            }
-          });
-        })
-        .catch(error => console.error('Error:', error));
-    });
+chrome.commands.onCommand.addListener((command) => {
+  log.info('Command', command);
+  if (command === "show-rephraser") {
+    handleRephrase();
   }
 });
+
+chrome.contextMenus.onClicked.addListener((info, _tab) => {
+  if (info.menuItemId === "rephrase") {
+    handleRephrase();
+  }
+});
+
+// Reusable handler for the rephraser functionality
+async function handleRephrase() {
+  try {
+    // Get the active tab
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+
+    if (!tab?.id) {
+      log.warn('No active tab found');
+      return;
+    }
+
+    // Execute script to get the selected text
+    const [{ result: selectedText }] = await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      function: () => window.getSelection()?.toString() || ''
+    });
+
+    if (!selectedText) {
+      log.warn('No text selected');
+      return;
+    }
+
+    // Retrieve API settings from storage
+    const data = await chrome.storage.sync.get(['apiKey', 'model', 'baseUrl', 'apiType']);
+
+    // Make the rephrasing request
+    const rephrasedText = await makeRephrasingRequest(selectedText, data);
+
+    // Save the rephrased text to local storage
+    await chrome.storage.local.set({ popupData: rephrasedText });
+
+    // Notify the content script to display the floating popup and response
+    await chrome.tabs.sendMessage(tab.id, { action: 'showFloatingPopup' });
+    await chrome.tabs.sendMessage(tab.id, {
+      action: 'showApiResponse',
+      response: rephrasedText
+    });
+  } catch (error) {
+    console.error('Error in handleRephraser:', error);
+  }
+}
 
 var rebuildRules = undefined;
 if (typeof chrome !== "undefined" && chrome.runtime && chrome.runtime.id) {
     rebuildRules = async function (domain) {
+        log.info('Rules', `Rebuilding for ${domain}`);
         const domains = [domain];
         /** @type {chrome.declarativeNetRequest.Rule[]} */
         const rules = [{
@@ -193,3 +190,8 @@ if (typeof chrome !== "undefined" && chrome.runtime && chrome.runtime.id) {
         });
     }
 }
+// Simple logging wrapper
+const log = {
+  info: (tag, data) => console.log(`[${tag}]`, data),
+  error: (tag, data) => console.error(`[${tag}]`, data)
+};

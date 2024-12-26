@@ -1,6 +1,4 @@
-console.log('Floating popup script loaded');
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('Floating popup DOM loaded');
   const apiResponseContainer = document.getElementById('apiResponse');
   const copyButton = document.getElementById('copyButton');
 

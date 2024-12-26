@@ -4,7 +4,7 @@
 
 // Get API keys from environment variables
 const API_KEY = Deno.env.get("GEMINI_API_KEY");
-const model = "gemini-1.5-flash";
+const model = "gemini-1.5-flash-8b";
 
 // Example usage in a Deno Deploy function
 Deno.serve(async (req) => {

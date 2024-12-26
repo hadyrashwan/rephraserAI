@@ -82,7 +82,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      console.log('Sending overwrite message to tab:', tabs[0].id);
       
       // Check if the content script is ready
       chrome.tabs.sendMessage(tabs[0].id, {
@@ -99,7 +98,6 @@ document.addEventListener('DOMContentLoaded', () => {
           return;
         }
 
-        console.log('Overwrite response:', response);
         if (response && response.success) {
           overwriteButton.textContent = 'Overwritten';
           setTimeout(() => {
