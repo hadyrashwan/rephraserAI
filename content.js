@@ -1,4 +1,3 @@
-// Ensure content script is ready and listening
 
 let floatingPopup = null;
 
@@ -9,7 +8,14 @@ window.addEventListener('message', (event) => {
     floatingPopup = null;
   }
   
-  // Removed replace text handling
+});
+
+// Close popup when clicking outside
+document.addEventListener('click', (event) => {
+  if (floatingPopup && !floatingPopup.contains(event.target)) {
+    document.body.removeChild(floatingPopup);
+    floatingPopup = null;
+  }
 });
 
 
@@ -22,17 +28,35 @@ function createFloatingPopup(x, y) {
   floatingPopup = document.createElement('iframe');
   floatingPopup.src = chrome.runtime.getURL('floating-popup.html');
   floatingPopup.style.position = 'absolute';
-  floatingPopup.style.left = `${x}px`;
-  floatingPopup.style.top = `${y}px`;
+  
+  // Ensure the popup doesn't go off-screen
+  const windowWidth = window.innerWidth;
+  const windowHeight = window.innerHeight;
+  const popupWidth = 300;
+  const popupHeight = 150;
+
+  let adjustedX = x;
+  let adjustedY = y;
+
+  if (x + popupWidth > windowWidth) {
+    adjustedX = windowWidth - popupWidth - 10; // 10px margin from the right edge
+  }
+  if (y + popupHeight > windowHeight) {
+      adjustedY = y - popupHeight - 10; // 10px margin from the bottom edge, position above
+      if(adjustedY < 0){
+        adjustedY = 10; // 10px margin from the top edge
+      }
+  }
+
+  floatingPopup.style.left = `${adjustedX}px`;
+  floatingPopup.style.top = `${adjustedY}px`;
   floatingPopup.style.width = '300px';
   floatingPopup.style.height = '150px';
   floatingPopup.style.border = 'none';
   floatingPopup.style.zIndex = '2147483647';
   document.body.appendChild(floatingPopup);
   return floatingPopup;
-}
-
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+}chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === 'showFloatingPopup' || message.action === 'showApiResponse') {
     const selection = window.getSelection();
     if (selection.toString().trim().length > 0) {

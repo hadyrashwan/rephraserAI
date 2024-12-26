@@ -9,7 +9,6 @@ chrome.runtime.onInstalled.addListener(() => {
   });
 });
 
-
 // Shared function for API request
 function makeRephrasingRequest(selectedText, data) {
   log.info('Request', {
