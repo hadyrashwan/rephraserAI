@@ -1,5 +1,4 @@
-document.addEventListener('DOMContentLoaded', domContentLoaded());
-export function domContentLoaded() {
+const  domContentLoaded = function() {
   return () => {
     const rephrasedTextElement = document.getElementById('rephrasedText');
     const copyButton = document.getElementById('copyButton');
@@ -55,7 +54,7 @@ export function domContentLoaded() {
   };
 }
 
-export function saveListener(apiKeyInput, modelInput, baseUrlInput, apiTypeSelect, saveButton) {
+const saveListener = function saveListener(apiKeyInput, modelInput, baseUrlInput, apiTypeSelect, saveButton) {
   return (event) => {
     event.preventDefault();
     const apiKey = apiKeyInput.value;
@@ -78,3 +77,6 @@ export function saveListener(apiKeyInput, modelInput, baseUrlInput, apiTypeSelec
     });
   };
 }
+
+document.addEventListener('DOMContentLoaded', domContentLoaded());
+
