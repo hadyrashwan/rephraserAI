@@ -7,7 +7,8 @@ const API_KEY = Deno.env.get("GEMINI_API_KEY");
 const model = "gemini-1.5-flash-8b";
 
 // Example usage in a Deno Deploy function
-Deno.serve(async (req) => {
+
+export const server = async (req) => {
   const url = new URL(req.url);
   const pathname = url.pathname;
   if (pathname === "/gemini/default") {
@@ -45,4 +46,6 @@ Deno.serve(async (req) => {
     headers: { "Content-Type": "application/json" },
     status: 404,
   });
-});
+}
+
+Deno.serve(server);
