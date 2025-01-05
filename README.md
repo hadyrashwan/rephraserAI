@@ -46,6 +46,12 @@ RephraserAI is a Chrome extension that allows you to rephrase selected text usin
 - **OpenAI-Compatible API**: Use any OpenAI-compatible API by entering the base URL and API key.
 - **Local Execution**: Run the extension locally using Ollama by setting the base URL to `http://localhost:11434`.
 
+## Bundling the Extension
+- To bundle the extension, use the following command:
+```sh
+zip -r dist.zip * zip -r dist.zip *  -x "node_modules/*"
+```
+
 ## Contributing
 
 Contributions are welcome! Please open an issue or submit a pull request.

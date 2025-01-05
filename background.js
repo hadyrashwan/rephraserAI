@@ -1,21 +1,8 @@
 
 
-chrome.runtime.onInstalled.addListener(() => {
-  log.info('Install', 'Creating context menu');
-  chrome.contextMenus.create({
-    id: "rephrase",
-    title: "Rephrase with RephraserAI",
-    contexts: ["selection"]
-  });
-});
 
-// Shared function for API request
-function makeRephrasingRequest(selectedText, data) {
-  log.info('Request', {
-    apiType: data.apiType,
-    model: data.model,
-    hasApiKey: !!data.apiKey
-  });
+
+const  makeRephrasingRequest =  function(selectedText, data) {
 
   const apiKey = data.apiKey;
   const model = data.model || 'gemini-1.5-flash';
@@ -91,7 +78,6 @@ Output your rephrased text directly, without any additional formatting or tags.`
 
   return fetch(requestUrl, options)
     .then(response => {
-      log.info('Response', response.status);
       return response.json();
     })
     .then(data => {
@@ -104,32 +90,46 @@ Output your rephrased text directly, without any additional formatting or tags.`
       return rephrasedText;
     })
     .catch(error => {
-      log.error('Fetch', error);
+      console.error('Fetch', error);
       throw error;
     });
 }
 
-chrome.commands.onCommand.addListener((command) => {
-  log.info('Command', command);
-  if (command === "show-rephraser") {
-    handleRephrase();
-  }
-});
+async function rebuildRules (domain) {
 
-chrome.contextMenus.onClicked.addListener((info, _tab) => {
-  if (info.menuItemId === "rephrase") {
-    handleRephrase();
+   if (typeof chrome !== "undefined" && chrome.runtime && chrome.runtime.id) {
+
+  const domains = [domain];
+  /** @type {chrome.declarativeNetRequest.Rule[]} */
+  const rules = [{
+      id: 1,
+      condition: {
+          requestDomains: domains
+      },
+      action: {
+          type: 'modifyHeaders',
+          requestHeaders: [{
+              header: 'origin',
+              operation: 'set',
+              value: `http://${domain}`,
+          }],
+      },
+  }];
+  await chrome.declarativeNetRequest.updateDynamicRules({
+      removeRuleIds: rules.map(r => r.id),
+      addRules: rules,
+  });
+
   }
-});
+}
 
 // Reusable handler for the rephraser functionality
-async function handleRephrase() {
+const handleRephrase = async function() {
   try {
     // Get the active tab
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 
     if (!tab?.id) {
-      log.warn('No active tab found');
       return;
     }
 
@@ -140,7 +140,6 @@ async function handleRephrase() {
     });
 
     if (!selectedText) {
-      log.warn('No text selected');
       return;
     }
 
@@ -164,34 +163,25 @@ async function handleRephrase() {
   }
 }
 
-var rebuildRules = undefined;
-if (typeof chrome !== "undefined" && chrome.runtime && chrome.runtime.id) {
-    rebuildRules = async function (domain) {
-        log.info('Rules', `Rebuilding for ${domain}`);
-        const domains = [domain];
-        /** @type {chrome.declarativeNetRequest.Rule[]} */
-        const rules = [{
-            id: 1,
-            condition: {
-                requestDomains: domains
-            },
-            action: {
-                type: 'modifyHeaders',
-                requestHeaders: [{
-                    header: 'origin',
-                    operation: 'set',
-                    value: `http://${domain}`,
-                }],
-            },
-        }];
-        await chrome.declarativeNetRequest.updateDynamicRules({
-            removeRuleIds: rules.map(r => r.id),
-            addRules: rules,
-        });
+if(typeof chrome != 'undefined'){
+
+  chrome.runtime.onInstalled.addListener(() => {
+    chrome.contextMenus.create({
+      id: "rephrase",
+      title: "Rephrase with RephraserAI",
+      contexts: ["selection"]
+    });
+  });
+  
+  chrome.commands.onCommand.addListener((command) => {
+    if (command === "show-rephraser") {
+      handleRephrase();
     }
+  });
+  
+  chrome.contextMenus.onClicked.addListener((info, _tab) => {
+    if (info.menuItemId === "rephrase") {
+      handleRephrase();
+    }
+  });
 }
-// Simple logging wrapper
-const log = {
-  info: (tag, data) => console.log(`[${tag}]`, data),
-  error: (tag, data) => console.error(`[${tag}]`, data)
-};
